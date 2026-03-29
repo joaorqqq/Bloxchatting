@@ -3,528 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloxChatting</title>
+    <title>BloxChatting - Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        * {
-            font-family: 'Inter', -apple-system, sans-serif;
-        }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #313338; color: #dbdee1; overflow: hidden; }
         
-        body {
-            background: #313338;
-            color: #dbdee1;
-            overflow: hidden;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
         
-        /* Scrollbar customizada */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #1a1b1e;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2b2d31;
-        }
-        
-        /* Cores do Discord */
         .bg-discord-dark { background: #1e1f22; }
         .bg-discord-darker { background: #2b2d31; }
         .bg-discord-darkest { background: #313338; }
         .bg-discord-sidebar { background: #1e1f22; }
         .text-discord-muted { color: #949ba4; }
         .text-discord-normal { color: #dbdee1; }
-        .border-discord { border-color: #2b2d31; }
         
-        /* Glassmorphism para gavetas mobile */
-        .glass-drawer {
-            background: rgba(30, 31, 34, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-        
-        /* Animações */
-        @keyframes slideInLeft {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .drawer-left {
-            animation: slideInLeft 0.3s ease-out;
-        }
-        
-        .drawer-right {
-            animation: slideInRight 0.3s ease-out;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.2s ease-out;
-        }
-        
-        /* Status indicators */
-        .status-online { background: #23a55a; }
-        .status-idle { background: #f0b232; }
-        .status-dnd { background: #f23f43; }
-        .status-offline { background: #80848e; }
-        
-        /* Channel hover */
-        .channel-item:hover {
-            background: #35373c;
-            color: #dbdee1;
-        }
-        
-        .channel-active {
-            background: #404249;
-            color: #fff;
-        }
-        
-        /* Server icon hover */
-        .server-icon {
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        
-        .server-icon:hover {
-            border-radius: 35%;
-        }
-        
+        .server-icon { transition: all 0.2s ease; position: relative; }
+        .server-icon:hover { border-radius: 35%; }
+        .server-icon.active { border-radius: 35%; background-color: #5865f2; color: white; }
         .server-icon::before {
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 8px;
-            background: #fff;
-            border-radius: 0 4px 4px 0;
-            transition: all 0.2s ease;
+            content: ''; position: absolute; left: -8px; top: 50%;
+            transform: translateY(-50%); width: 0; height: 8px;
+            background: #fff; border-radius: 0 4px 4px 0; transition: all 0.2s ease;
         }
+        .server-icon:hover::before { height: 20px; width: 4px; }
+        .server-icon.active::before { height: 40px; width: 4px; }
         
-        .server-icon:hover::before {
-            height: 20px;
-            width: 4px;
-        }
-        
-        .server-icon.active::before {
-            height: 40px;
-            width: 4px;
-        }
-        
-        /* Message styles */
-        .message-item:hover {
-            background: #2e3035;
-        }
-        
-        /* Input focus */
-        .chat-input:focus {
-            border-color: #00aff4;
-            outline: none;
-        }
-        
-        /* Badge notification */
-        .notification-badge {
-            background: #f23f43;
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            min-width: 16px;
-            height: 16px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-        }
-        
-        /* Mobile overlay */
-        .mobile-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 40;
-        }
+        .channel-item:hover { background: #35373c; color: #dbdee1; }
+        .channel-active { background: #404249; color: #fff; }
+        .message-item:hover { background: #2e3035; }
+        .chat-input:focus { border-color: #00aff4; outline: none; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
     
-    <!-- COLUNA 1: Servidores (Sidebar) -->
-    <div id="servers-sidebar" class="hidden md:flex flex-col w-[72px] bg-discord-darkest items-center py-3 gap-2 overflow-y-auto">
-        <!-- Home/DMs Button -->
-        <button onclick="showDMs()" class="server-icon active w-12 h-12 bg-discord-darker rounded-full flex items-center justify-center text-xl hover:bg-[#5865f2] transition-colors">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>
+    <div class="hidden md:flex flex-col w-[72px] bg-discord-darkest items-center py-3 gap-2 overflow-y-auto shrink-0 z-20">
+        <button onclick="showDMs()" id="home-btn" class="server-icon active w-12 h-12 bg-discord-darker rounded-full flex items-center justify-center text-xl hover:bg-[#5865f2] transition-colors">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
         </button>
-        
         <div class="w-8 h-[2px] bg-discord-darker rounded-full my-1"></div>
         
-        <!-- Server Icons -->
-        <button onclick="selectServer('server1')" class="server-icon w-12 h-12 rounded-full overflow-hidden hover:rounded-2xl transition-all">
-            <img src="https://ui-avatars.com/api/?name=GS&background=10b981&color=fff&size=128" alt="Server" class="w-full h-full object-cover">
-        </button>
+        <div id="servers-list" class="w-full flex flex-col items-center gap-2"></div>
         
-        <button onclick="selectServer('server2')" class="server-icon w-12 h-12 rounded-full overflow-hidden hover:rounded-2xl transition-all">
-            <img src="https://ui-avatars.com/api/?name=BX&background=3b82f6&color=fff&size=128" alt="Server" class="w-full h-full object-cover">
-        </button>
-        
-        <!-- Add Server Button -->
-        <button class="server-icon w-12 h-12 bg-discord-darker rounded-full flex items-center justify-center text-[#23a55a] text-2xl hover:bg-[#23a55a] hover:text-white transition-all">
-            +
-        </button>
+        <button onclick="createNewServer()" class="server-icon w-12 h-12 bg-discord-darker rounded-full flex items-center justify-center text-[#23a55a] text-2xl hover:bg-[#23a55a] hover:text-white transition-all">+</button>
     </div>
     
-    <!-- COLUNA 2: Canais/DMs -->
-    <div id="channels-sidebar" class="hidden md:flex flex-col w-60 bg-discord-sidebar">
-        <!-- Server Header -->
-        <div id="server-header" class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm cursor-pointer hover:bg-discord-darker transition-colors">
-            <span class="font-semibold text-white" id="server-name">Mensagens Diretas</span>
-            <svg class="w-4 h-4 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 10l5 5 5-5z"/>
-            </svg>
+    <div class="hidden md:flex flex-col w-60 bg-discord-sidebar shrink-0 z-10 border-r border-discord-dark">
+        <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm cursor-pointer hover:bg-discord-darker transition-colors">
+            <span class="font-semibold text-white truncate" id="server-name">Mensagens Diretas</span>
         </div>
         
-        <!-- Search Bar -->
-        <div class="px-2 py-2">
-            <button onclick="showFindFriend()" class="w-full bg-discord-darkest px-2 py-1.5 rounded text-xs text-discord-muted hover:text-discord-normal transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                Buscar ou adicionar amigo
-            </button>
-        </div>
-        
-        <!-- DMs List / Channels List -->
-        <div id="channels-list" class="flex-1 overflow-y-auto px-2">
-            <!-- DMs View -->
+        <div class="flex-1 overflow-y-auto px-2 py-2">
             <div id="dms-view">
+                <button onclick="showFindFriend()" class="w-full bg-discord-darkest px-2 py-1.5 rounded text-xs text-discord-muted hover:text-discord-normal transition-colors flex items-center gap-2 mb-4">
+                    Buscar ou adicionar amigo
+                </button>
                 <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-2">Mensagens Diretas</div>
-                
-                <!-- Friend Item -->
-                <div class="channel-item px-2 py-2 rounded cursor-pointer flex items-center gap-3 text-discord-muted text-sm">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Vini&size=64" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1">
-                        <div class="text-discord-normal font-medium">Vini</div>
-                        <div class="text-xs text-discord-muted truncate">Não de 1k</div>
-                    </div>
-                </div>
-                
-                <div class="channel-item px-2 py-2 rounded cursor-pointer flex items-center gap-3 text-discord-muted text-sm">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Tyx&size=64" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-offline border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1">
-                        <div class="text-discord-normal font-medium">Tyx</div>
-                        <div class="text-xs text-discord-muted truncate">Vídeo de um amigo</div>
-                    </div>
+                <div id="friends-list-container">
+                    <p class="text-xs text-discord-muted px-2">Carregando amigos...</p>
                 </div>
             </div>
             
-            <!-- Server Channels View (Hidden by default) -->
             <div id="server-channels-view" class="hidden">
-                <!-- Text Channels Category -->
                 <div class="py-2">
-                    <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-1 flex items-center justify-between cursor-pointer hover:text-discord-normal">
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7 10l5 5 5-5z"/>
-                            </svg>
-                            CANAIS DE TEXTO
-                        </div>
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
+                    <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-1 flex items-center justify-between">
+                        <span>CANAIS DE TEXTO</span>
+                        <button onclick="createNewChannel()" class="hover:text-white text-lg">+</button>
                     </div>
-                    
-                    <!-- Channels -->
-                    <div onclick="selectChannel('global-chat')" class="channel-item channel-active px-2 py-1 rounded cursor-pointer flex items-center gap-2 text-sm mx-1">
-                        <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M5.88657 21C5.57547 21 5.3399 20.7189 5.39427 20.4126L6.00001 17H2.59511C2.28449 17 2.04905 16.7198 2.10259 16.4138L2.27759 15.4138C2.31946 15.1746 2.52722 15 2.77011 15H6.35001L7.41001 9H4.00511C3.69449 9 3.45905 8.71977 3.51259 8.41381L3.68759 7.41381C3.72946 7.17456 3.93722 7 4.18011 7H7.76001L8.39677 3.41262C8.43914 3.17391 8.64664 3 8.88907 3H9.87344C10.1845 3 10.4201 3.28107 10.3657 3.58738L9.76001 7H15.76L16.3968 3.41262C16.4391 3.17391 16.6466 3 16.8891 3H17.8734C18.1845 3 18.4201 3.28107 18.3657 3.58738L17.76 7H21.1649C21.4755 7 21.711 7.28023 21.6574 7.58619L21.4824 8.58619C21.4406 8.82544 21.2328 9 20.9899 9H17.41L16.35 15H19.7549C20.0655 15 20.301 15.2802 20.2474 15.5862L20.0724 16.5862C20.0306 16.8254 19.8228 17 19.5799 17H16L15.3632 20.5874C15.3209 20.8261 15.1134 21 14.8709 21H13.8866C13.5755 21 13.3399 20.7189 13.3943 20.4126L14 17H8.00001L7.36325 20.5874C7.32088 20.8261 7.11337 21 6.87094 21H5.88657ZM9.41045 9L8.35045 15H14.3504L15.4104 9H9.41045Z"/>
-                        </svg>
-                        <span>global-chat</span>
-                    </div>
-                    
-                    <div onclick="selectChannel('portuguese')" class="channel-item px-2 py-1 rounded cursor-pointer flex items-center gap-2 text-sm mx-1">
-                        <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M5.88657 21C5.57547 21 5.3399 20.7189 5.39427 20.4126L6.00001 17H2.59511C2.28449 17 2.04905 16.7198 2.10259 16.4138L2.27759 15.4138C2.31946 15.1746 2.52722 15 2.77011 15H6.35001L7.41001 9H4.00511C3.69449 9 3.45905 8.71977 3.51259 8.41381L3.68759 7.41381C3.72946 7.17456 3.93722 7 4.18011 7H7.76001L8.39677 3.41262C8.43914 3.17391 8.64664 3 8.88907 3H9.87344C10.1845 3 10.4201 3.28107 10.3657 3.58738L9.76001 7H15.76L16.3968 3.41262C16.4391 3.17391 16.6466 3 16.8891 3H17.8734C18.1845 3 18.4201 3.28107 18.3657 3.58738L17.76 7H21.1649C21.4755 7 21.711 7.28023 21.6574 7.58619L21.4824 8.58619C21.4406 8.82544 21.2328 9 20.9899 9H17.41L16.35 15H19.7549C20.0655 15 20.301 15.2802 20.2474 15.5862L20.0724 16.5862C20.0306 16.8254 19.8228 17 19.5799 17H16L15.3632 20.5874C15.3209 20.8261 15.1134 21 14.8709 21H13.8866C13.5755 21 13.3399 20.7189 13.3943 20.4126L14 17H8.00001L7.36325 20.5874C7.32088 20.8261 7.11337 21 6.87094 21H5.88657ZM9.41045 9L8.35045 15H14.3504L15.4104 9H9.41045Z"/>
-                        </svg>
-                        <span>🇧🇷 portuguese</span>
-                    </div>
-                    
-                    <div onclick="selectChannel('comandos')" class="channel-item px-2 py-1 rounded cursor-pointer flex items-center gap-2 text-sm mx-1">
-                        <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M5.88657 21C5.57547 21 5.3399 20.7189 5.39427 20.4126L6.00001 17H2.59511C2.28449 17 2.04905 16.7198 2.10259 16.4138L2.27759 15.4138C2.31946 15.1746 2.52722 15 2.77011 15H6.35001L7.41001 9H4.00511C3.69449 9 3.45905 8.71977 3.51259 8.41381L3.68759 7.41381C3.72946 7.17456 3.93722 7 4.18011 7H7.76001L8.39677 3.41262C8.43914 3.17391 8.64664 3 8.88907 3H9.87344C10.1845 3 10.4201 3.28107 10.3657 3.58738L9.76001 7H15.76L16.3968 3.41262C16.4391 3.17391 16.6466 3 16.8891 3H17.8734C18.1845 3 18.4201 3.28107 18.3657 3.58738L17.76 7H21.1649C21.4755 7 21.711 7.28023 21.6574 7.58619L21.4824 8.58619C21.4406 8.82544 21.2328 9 20.9899 9H17.41L16.35 15H19.7549C20.0655 15 20.301 15.2802 20.2474 15.5862L20.0724 16.5862C20.0306 16.8254 19.8228 17 19.5799 17H16L15.3632 20.5874C15.3209 20.8261 15.1134 21 14.8709 21H13.8866C13.5755 21 13.3399 20.7189 13.3943 20.4126L14 17H8.00001L7.36325 20.5874C7.32088 20.8261 7.11337 21 6.87094 21H5.88657ZM9.41045 9L8.35045 15H14.3504L15.4104 9H9.41045Z"/>
-                        </svg>
-                        <span>comandos</span>
-                    </div>
+                    <div id="channels-list-container"></div>
                 </div>
             </div>
         </div>
         
-        <!-- User Profile Bar -->
-        <div class="h-[52px] bg-[#232428] px-2 flex items-center gap-2">
-            <div class="relative">
-                <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&size=64" class="w-8 h-8 rounded-full">
-                <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-[#232428] rounded-full"></div>
+        <div class="h-[52px] bg-[#232428] px-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="relative">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&size=64" class="w-8 h-8 rounded-full">
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-[#23a55a] border-2 border-[#232428] rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div id="user-username" class="text-xs font-semibold text-white truncate">Carregando...</div>
+                    <div id="user-tag" class="text-[10px] text-discord-muted truncate">#0000</div>
+                </div>
             </div>
-            <div class="flex-1 min-w-0">
-                <div id="user-username" class="text-xs font-semibold text-white truncate">Username</div>
-                <div id="user-tag" class="text-[10px] text-discord-muted truncate">#0000000000</div>
-            </div>
-            <button class="p-1 hover:bg-discord-darker rounded transition-colors" title="Configurações">
-                <svg class="w-5 h-5 text-discord-muted hover:text-discord-normal" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+            <button onclick="logoutUser()" class="p-1.5 hover:bg-[#f23f43] text-discord-muted hover:text-white rounded transition-colors" title="Sair">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                 </svg>
             </button>
         </div>
     </div>
     
-    <!-- COLUNA 3: Área de Chat (Principal) -->
-    <div class="flex-1 flex flex-col bg-discord-darkest relative">
-        <!-- Chat Header -->
-        <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm">
-            <div class="flex items-center gap-3">
-                <!-- Mobile Menu Button -->
-                <button onclick="toggleChannelsDrawer()" class="md:hidden p-2 hover:bg-discord-darker rounded transition-colors">
-                    <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-                    </svg>
-                </button>
-                
-                <svg class="w-6 h-6 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M5.88657 21C5.57547 21 5.3399 20.7189 5.39427 20.4126L6.00001 17H2.59511C2.28449 17 2.04905 16.7198 2.10259 16.4138L2.27759 15.4138C2.31946 15.1746 2.52722 15 2.77011 15H6.35001L7.41001 9H4.00511C3.69449 9 3.45905 8.71977 3.51259 8.41381L3.68759 7.41381C3.72946 7.17456 3.93722 7 4.18011 7H7.76001L8.39677 3.41262C8.43914 3.17391 8.64664 3 8.88907 3H9.87344C10.1845 3 10.4201 3.28107 10.3657 3.58738L9.76001 7H15.76L16.3968 3.41262C16.4391 3.17391 16.6466 3 16.8891 3H17.8734C18.1845 3 18.4201 3.28107 18.3657 3.58738L17.76 7H21.1649C21.4755 7 21.711 7.28023 21.6574 7.58619L21.4824 8.58619C21.4406 8.82544 21.2328 9 20.9899 9H17.41L16.35 15H19.7549C20.0655 15 20.301 15.2802 20.2474 15.5862L20.0724 16.5862C20.0306 16.8254 19.8228 17 19.5799 17H16L15.3632 20.5874C15.3209 20.8261 15.1134 21 14.8709 21H13.8866C13.5755 21 13.3399 20.7189 13.3943 20.4126L14 17H8.00001L7.36325 20.5874C7.32088 20.8261 7.11337 21 6.87094 21H5.88657ZM9.41045 9L8.35045 15H14.3504L15.4104 9H9.41045Z"/>
-                </svg>
-                <span id="current-channel-name" class="font-semibold text-white">global-chat</span>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <!-- Mobile Members Button -->
-                <button onclick="toggleMembersDrawer()" class="md:hidden p-2 hover:bg-discord-darker rounded transition-colors">
-                    <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                    </svg>
-                </button>
-                
-                <svg class="w-5 h-5 text-discord-muted cursor-pointer hover:text-discord-normal hidden md:block" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/>
-                </svg>
-                <svg class="w-5 h-5 text-discord-muted cursor-pointer hover:text-discord-normal hidden md:block" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
+    <div class="flex-1 flex flex-col bg-discord-darkest relative min-w-0">
+        <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm shrink-0">
+            <div class="flex items-center gap-2">
+                <span class="text-discord-muted text-xl hidden" id="channel-hashtag">#</span>
+                <span id="current-channel-name" class="font-semibold text-white">Selecione um chat</span>
             </div>
         </div>
         
-     
-        <!-- Message Input -->
-        <div class="px-4 pb-6">
+        <div id="messages-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-1">
+            <div class="flex flex-col items-center justify-center h-full opacity-50">
+                <p class="text-white">Escolha um servidor ou DM para começar.</p>
+            </div>
+        </div>
+        
+        <div class="px-4 pb-6 mt-2 shrink-0">
             <div class="bg-discord-sidebar rounded-lg">
                 <input 
                     type="text" 
-                    id="message-input"
-                    placeholder="Enviar mensagem em #global-chat"
-                    class="chat-input w-full bg-transparent px-4 py-3 text-discord-normal placeholder-discord-muted outline-none"
+                    id="message-input" 
+                    placeholder="Conversar..." 
+                    class="chat-input w-full bg-transparent px-4 py-3 text-discord-normal placeholder-discord-muted outline-none disabled:opacity-50" 
+                    disabled
                     onkeypress="if(event.key==='Enter') sendMessage()"
                 >
-            </div>
-        </div>
-    </div>
-    
-    <!-- COLUNA 4: Membros (Desktop only, hidden on mobile) -->
-    <div id="members-sidebar" class="hidden md:flex flex-col w-60 bg-discord-sidebar overflow-y-auto">
-        <div class="p-3">
-            <!-- Online Members -->
-            <div class="mb-4">
-                <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-1 flex items-center gap-2">
-                    ONLINE — 5
-                </div>
-                
-                <!-- Member Item -->
-                <div class="px-2 py-1.5 rounded hover:bg-discord-darker cursor-pointer flex items-center gap-3">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Admin&size=64&background=f23f43" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm text-[#f23f43] font-medium truncate">Admin User</div>
-                    </div>
-                </div>
-                
-                <div class="px-2 py-1.5 rounded hover:bg-discord-darker cursor-pointer flex items-center gap-3">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Moderator&size=64&background=5865f2" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm text-[#5865f2] font-medium truncate">Moderator</div>
-                    </div>
-                </div>
-                
-                <div class="px-2 py-1.5 rounded hover:bg-discord-darker cursor-pointer flex items-center gap-3">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Vini&size=64" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm text-discord-normal truncate">Vini</div>
-                    </div>
-                </div>
-                
-                <div class="px-2 py-1.5 rounded hover:bg-discord-darker cursor-pointer flex items-center gap-3">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Noob&size=64" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-idle border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm text-discord-normal truncate">Noob</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Offline Members -->
-            <div>
-                <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-1 flex items-center gap-2">
-                    OFFLINE — 16
-                </div>
-                
-                <div class="px-2 py-1.5 rounded hover:bg-discord-darker cursor-pointer flex items-center gap-3 opacity-50">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=Tyx&size=64" class="w-8 h-8 rounded-full">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 status-offline border-2 border-discord-sidebar rounded-full"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm text-discord-normal truncate">Tyx</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- MOBILE DRAWERS -->
-    <!-- Channels Drawer (Mobile) -->
-    <div id="channels-drawer" class="fixed inset-0 z-50 hidden md:hidden">
-        <div class="mobile-overlay fade-in" onclick="toggleChannelsDrawer()"></div>
-        <div class="drawer-left glass-drawer absolute left-0 top-0 bottom-0 w-72 overflow-y-auto">
-            <div class="flex flex-col h-full">
-                <!-- Clone of Column 2 content -->
-                <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm">
-                    <span class="font-semibold text-white">Mensagens Diretas</span>
-                    <button onclick="toggleChannelsDrawer()" class="p-2 hover:bg-discord-darker rounded">
-                        <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="px-2 py-2">
-                    <button class="w-full bg-discord-darkest px-2 py-1.5 rounded text-xs text-discord-muted hover:text-discord-normal transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        Buscar ou adicionar amigo
-                    </button>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto px-2">
-                    <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-2">Mensagens Diretas</div>
-                    
-                    <div class="channel-item px-2 py-2 rounded cursor-pointer flex items-center gap-3 text-discord-muted text-sm">
-                        <div class="relative">
-                            <img src="https://ui-avatars.com/api/?name=Vini&size=64" class="w-8 h-8 rounded-full">
-                            <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-discord-sidebar rounded-full"></div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-discord-normal font-medium">Vini</div>
-                            <div class="text-xs text-discord-muted truncate">Não de 1k</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Members Drawer (Mobile) -->
-    <div id="members-drawer" class="fixed inset-0 z-50 hidden md:hidden">
-        <div class="mobile-overlay fade-in" onclick="toggleMembersDrawer()"></div>
-        <div class="drawer-right glass-drawer absolute right-0 top-0 bottom-0 w-72 overflow-y-auto">
-            <div class="flex flex-col h-full">
-                <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm">
-                    <span class="font-semibold text-white">Membros</span>
-                    <button onclick="toggleMembersDrawer()" class="p-2 hover:bg-discord-darker rounded">
-                        <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="p-3 flex-1 overflow-y-auto">
-                    <div class="mb-4">
-                        <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-1">ONLINE — 5</div>
-                        
-                        <div class="px-2 py-1.5 rounded hover:bg-discord-darker cursor-pointer flex items-center gap-3">
-                            <div class="relative">
-                                <img src="https://ui-avatars.com/api/?name=Admin&size=64&background=f23f43" class="w-8 h-8 rounded-full">
-                                <div class="absolute bottom-0 right-0 w-3 h-3 status-online border-2 border-discord-sidebar rounded-full"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm text-[#f23f43] font-medium truncate">Admin User</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Find Friend Modal -->
-    <div id="find-friend-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="mobile-overlay fade-in" onclick="closeFindFriend()"></div>
-        <div class="glass-drawer rounded-2xl p-6 w-full max-w-md relative z-10 fade-in">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-white">Adicionar Amigo</h3>
-                <button onclick="closeFindFriend()" class="p-2 hover:bg-discord-darker rounded">
-                    <svg class="w-5 h-5 text-discord-muted" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <p class="text-sm text-discord-muted mb-4">Adicione um amigo usando o ID único dele.</p>
-            
-            <div class="space-y-3">
-                <input 
-                    type="text" 
-                    id="friend-id-input"
-                    placeholder="Nome#1234567890"
-                    class="w-full bg-discord-darkest border border-discord px-4 py-3 rounded-lg text-white outline-none focus:border-[#00aff4]"
-                >
-                
-                <button onclick="addFriend()" class="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white font-semibold py-3 rounded-lg transition-colors">
-                    Enviar Solicitação
-                </button>
             </div>
         </div>
     </div>
@@ -532,7 +129,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, get, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, get, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c",
@@ -549,218 +146,232 @@
         const db = getDatabase(app);
         
         let currentUser = null;
-        let currentChannel = 'global-chat';
         let currentServerId = null;
+        let currentChannelId = null;
         
-        // Check Authentication
+        // 1. TRAVA DE SEGURANÇA (Auth Guard)
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                window.location.href = "index.html";
+                // Se não estiver logado, chuta para o index.html
+                window.location.href = "index.html"; 
                 return;
             }
-            
             currentUser = user;
             
-            // Load user profile
-            const userSnapshot = await get(ref(db, `users/${user.uid}`));
-            if (userSnapshot.exists()) {
-                const userData = userSnapshot.val();
-                document.getElementById('user-username').textContent = userData.username;
-                document.getElementById('user-tag').textContent = `#${userData.tag}`;
-                
-                if (userData.photoURL) {
-                    document.getElementById('user-avatar').src = userData.photoURL;
-                }
+            // Carrega perfil visual
+            const userSnap = await get(ref(db, `users/${user.uid}`));
+            if(userSnap.exists()) {
+                const data = userSnap.val();
+                document.getElementById('user-username').textContent = data.username;
+                document.getElementById('user-tag').textContent = `#${data.tag || '0000'}`;
+            } else {
+                document.getElementById('user-username').textContent = user.email.split('@')[0];
             }
             
-            // Load messages for current channel
-            loadMessages();
+            loadServers();
+            loadDMs();
         });
-        
-        // Load Messages
-        function loadMessages() {
-            const messagesRef = ref(db, `channels/${currentChannel}/messages`);
-            onValue(messagesRef, (snapshot) => {
-                const messagesContainer = document.getElementById('messages-container');
-                // Keep welcome message
-                const welcomeMsg = messagesContainer.children[0];
-                messagesContainer.innerHTML = '';
-                messagesContainer.appendChild(welcomeMsg);
+
+        // 2. FUNÇÃO DE LOGOUT
+        window.logoutUser = () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Erro ao sair: " + error.message);
+            });
+        };
+
+        // 3. CARREGAR SERVIDORES
+        function loadServers() {
+            onValue(ref(db, `servers`), (snapshot) => {
+                const container = document.getElementById('servers-list');
+                container.innerHTML = '';
                 
-                if (snapshot.exists()) {
-                    const messages = [];
-                    snapshot.forEach((child) => {
-                        messages.push({ id: child.key, ...child.val() });
-                    });
+                if (!snapshot.exists()) return;
+
+                snapshot.forEach(child => {
+                    const server = child.val();
+                    const btn = document.createElement('button');
+                    btn.className = `server-icon w-12 h-12 rounded-full overflow-hidden hover:rounded-2xl transition-all ${currentServerId === child.key ? 'active' : ''}`;
+                    btn.innerHTML = `<img src="https://ui-avatars.com/api/?name=${encodeURIComponent(server.name)}&background=random&color=fff" class="w-full h-full object-cover">`;
+                    btn.onclick = () => selectServer(child.key, server.name);
+                    container.appendChild(btn);
+                });
+            });
+        }
+
+        // 4. CARREGAR CANAIS
+        function loadChannels(serverId) {
+            onValue(ref(db, `servers/${serverId}/channels`), (snapshot) => {
+                const container = document.getElementById('channels-list-container');
+                container.innerHTML = '';
+                
+                if (!snapshot.exists()) {
+                    container.innerHTML = `<p class="text-xs text-discord-muted px-3">Sem canais</p>`;
+                    return;
+                }
+
+                let firstChannel = null;
+                snapshot.forEach(child => {
+                    if (!firstChannel) firstChannel = child.key;
                     
-                    messages.sort((a, b) => a.timestamp - b.timestamp);
-                    
-                    messages.forEach((msg) => {
-                        const messageEl = createMessageElement(msg);
-                        messagesContainer.appendChild(messageEl);
-                    });
-                    
-                    // Scroll to bottom
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    const channel = child.val();
+                    const div = document.createElement('div');
+                    div.className = `channel-item px-2 py-1 rounded cursor-pointer flex items-center gap-2 text-sm mx-1 ${currentChannelId === child.key ? 'channel-active' : ''}`;
+                    div.innerHTML = `<span class="text-discord-muted">#</span> <span>${channel.name}</span>`;
+                    div.onclick = () => selectChannel(child.key, channel.name, 'server');
+                    container.appendChild(div);
+                });
+
+                if (firstChannel && !currentChannelId) {
+                    const chData = snapshot.val()[firstChannel];
+                    selectChannel(firstChannel, chData.name, 'server');
                 }
             });
         }
-        
-        // Create Message Element
-        function createMessageElement(msg) {
-            const div = document.createElement('div');
-            div.className = 'message-item py-1 px-2 rounded hover:bg-discord-darker transition-colors';
-            
-            const timestamp = new Date(msg.timestamp).toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            div.innerHTML = `
-                <div class="flex gap-3">
-                    <img src="${msg.userAvatar || 'https://ui-avatars.com/api/?name=' + msg.username + '&size=64'}" 
-                         class="w-10 h-10 rounded-full flex-shrink-0">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-white text-sm">${msg.username}</span>
-                            <span class="text-xs text-discord-muted">${timestamp}</span>
+
+        // 5. CARREGAR MENSAGENS
+        function loadMessages() {
+            if (!currentChannelId) return;
+
+            const input = document.getElementById('message-input');
+            input.disabled = false; // Ativa o input
+
+            let path = currentServerId 
+                ? `servers/${currentServerId}/channels/${currentChannelId}/messages`
+                : `dms/${currentChannelId}/messages`;
+
+            onValue(ref(db, path), (snapshot) => {
+                const container = document.getElementById('messages-container');
+                container.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full opacity-50">
+                            <p class="text-white font-medium">O chat está vazio.</p>
+                            <p class="text-xs text-discord-muted">Seja o primeiro a enviar uma mensagem!</p>
+                        </div>`;
+                    return;
+                }
+
+                const msgs = [];
+                snapshot.forEach(child => msgs.push(child.val()));
+                msgs.sort((a, b) => a.timestamp - b.timestamp);
+
+                msgs.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = 'message-item py-1 px-2 rounded flex gap-3';
+                    const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    div.innerHTML = `
+                        <img src="${msg.userAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(msg.username)}" class="w-10 h-10 rounded-full mt-1 shrink-0">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-white text-sm hover:underline cursor-pointer">${msg.username}</span>
+                                <span class="text-xs text-discord-muted">${time}</span>
+                            </div>
+                            <div class="text-discord-normal text-sm break-words">${msg.content}</div>
                         </div>
-                        <div class="text-discord-normal text-sm mt-1 break-words">${msg.content}</div>
-                    </div>
-                </div>
-            `;
-            
-            return div;
+                    `;
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
         }
-        
-        // Send Message
+
+        // 6. ENVIAR MENSAGEM
         window.sendMessage = async () => {
             const input = document.getElementById('message-input');
             const content = input.value.trim();
-            
-            if (!content || !currentUser) return;
-            
-            const userSnapshot = await get(ref(db, `users/${currentUser.uid}`));
-            const userData = userSnapshot.val();
-            
-            const messageData = {
+            if (!content || !currentUser || !currentChannelId) return;
+
+            input.value = ''; // Limpa rápido para fluidez
+
+            const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+            const userData = userSnap.val() || { username: currentUser.email.split('@')[0] };
+
+            const path = currentServerId 
+                ? `servers/${currentServerId}/channels/${currentChannelId}/messages`
+                : `dms/${currentChannelId}/messages`;
+
+            await push(ref(db, path), {
                 userId: currentUser.uid,
                 username: userData.username,
-                userAvatar: userData.photoURL || '',
                 content: content,
                 timestamp: Date.now()
-            };
-            
-            await push(ref(db, `channels/${currentChannel}/messages`), messageData);
-            input.value = '';
+            });
         };
-        
-        // Navigation Functions
+
+        // 7. NAVEGAÇÃO
+        window.selectServer = (serverId, serverName) => {
+            currentServerId = serverId;
+            currentChannelId = null; 
+            
+            document.getElementById('dms-view').classList.add('hidden');
+            document.getElementById('server-channels-view').classList.remove('hidden');
+            document.getElementById('server-name').textContent = serverName;
+            document.getElementById('channel-hashtag').classList.remove('hidden');
+            
+            document.querySelectorAll('.server-icon').forEach(el => el.classList.remove('active'));
+            if(event) event.currentTarget.classList.add('active');
+            
+            loadChannels(serverId);
+        };
+
+        window.selectChannel = (channelId, channelName, type) => {
+            currentChannelId = channelId;
+            document.getElementById('current-channel-name').textContent = channelName;
+            document.getElementById('message-input').placeholder = `Conversar em #${channelName}...`;
+            
+            document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('channel-active'));
+            if(event && event.currentTarget) event.currentTarget.classList.add('channel-active');
+            
+            loadMessages();
+        };
+
         window.showDMs = () => {
+            currentServerId = null;
+            currentChannelId = null;
+            
             document.getElementById('dms-view').classList.remove('hidden');
             document.getElementById('server-channels-view').classList.add('hidden');
             document.getElementById('server-name').textContent = 'Mensagens Diretas';
             document.getElementById('current-channel-name').textContent = 'Amigos';
-            currentServerId = null;
-        };
-        
-        window.selectServer = (serverId) => {
-            document.getElementById('dms-view').classList.add('hidden');
-            document.getElementById('server-channels-view').classList.remove('hidden');
-            document.getElementById('server-name').textContent = 'Grow Studio🤫(GS)';
-            currentServerId = serverId;
+            document.getElementById('channel-hashtag').classList.add('hidden');
             
-            // Remove active class from all servers
-            document.querySelectorAll('.server-icon').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.server-icon').classList.add('active');
-        };
-        
-        window.selectChannel = (channelName) => {
-            currentChannel = channelName;
-            document.getElementById('current-channel-name').textContent = channelName;
+            document.getElementById('messages-container').innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full opacity-50">
+                    <p class="text-white">Selecione uma DM para conversar.</p>
+                </div>`;
+            document.getElementById('message-input').disabled = true;
+            document.getElementById('message-input').placeholder = "Selecione um amigo primeiro...";
             
-            // Update active channel
-            document.querySelectorAll('.channel-item').forEach(item => {
-                item.classList.remove('channel-active');
-            });
-            event.target.classList.add('channel-active');
-            
-            // Close drawer on mobile
-            if (window.innerWidth < 768) {
-                toggleChannelsDrawer();
-            }
-            
-            loadMessages();
+            document.querySelectorAll('.server-icon').forEach(el => el.classList.remove('active'));
+            document.getElementById('home-btn').classList.add('active');
         };
-        
-        // Mobile Drawer Functions
-        window.toggleChannelsDrawer = () => {
-            const drawer = document.getElementById('channels-drawer');
-            drawer.classList.toggle('hidden');
+
+        // 8. CRIAÇÃO BÁSICA
+        window.createNewServer = async () => {
+            const name = prompt("Nome do novo Servidor:");
+            if (!name) return;
+            const newServerRef = push(ref(db, 'servers'));
+            await set(newServerRef, { name: name, owner: currentUser.uid });
+            await push(ref(db, `servers/${newServerRef.key}/channels`), { name: 'geral' });
         };
-        
-        window.toggleMembersDrawer = () => {
-            const drawer = document.getElementById('members-drawer');
-            drawer.classList.toggle('hidden');
+
+        window.createNewChannel = async () => {
+            if (!currentServerId) return;
+            const name = prompt("Nome do novo Canal (ex: avisos):");
+            if (!name) return;
+            await push(ref(db, `servers/${currentServerId}/channels`), { name: name.toLowerCase().replace(/\s/g, '-') });
         };
+
+        function loadDMs() {
+            document.getElementById('friends-list-container').innerHTML = `<p class="text-xs text-discord-muted px-2">Suas DMs aparecerão aqui em breve.</p>`;
+        }
         
-        // Friend Functions
         window.showFindFriend = () => {
-            document.getElementById('find-friend-modal').classList.remove('hidden');
-        };
-        
-        window.closeFindFriend = () => {
-            document.getElementById('find-friend-modal').classList.add('hidden');
-            document.getElementById('friend-id-input').value = '';
-        };
-        
-        window.addFriend = async () => {
-            const fullId = document.getElementById('friend-id-input').value.trim();
-            
-            if (!fullId.includes('#') || fullId.length !== 21) {
-                alert('❌ Formato inválido! Use: Nome#1234567890');
-                return;
-            }
-            
-            const [username, tag] = fullId.split('#');
-            
-            // Search for user with this fullID
-            const usersRef = ref(db, 'users');
-            const snapshot = await get(usersRef);
-            
-            let foundUser = null;
-            snapshot.forEach((child) => {
-                const userData = child.val();
-                if (userData.fullID === fullId) {
-                    foundUser = { uid: child.key, ...userData };
-                }
-            });
-            
-            if (!foundUser) {
-                alert('❌ Usuário não encontrado!');
-                return;
-            }
-            
-            if (foundUser.uid === currentUser.uid) {
-                alert('❌ Você não pode adicionar a si mesmo!');
-                return;
-            }
-            
-            // Add to friends list
-            await set(ref(db, `users/${currentUser.uid}/friends/${foundUser.uid}`), {
-                username: foundUser.username,
-                tag: foundUser.tag,
-                fullID: foundUser.fullID,
-                addedAt: Date.now()
-            });
-            
-            alert('✅ Solicitação enviada com sucesso!');
-            closeFindFriend();
+            alert("Sistema de buscar amigos será implementado em breve!");
         };
     </script>
 </body>
