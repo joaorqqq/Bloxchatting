@@ -1,108 +1,109 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloxChatting - Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BloxChatting | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #313338; }
-        .auth-card { background: #1e1f22; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
-        input { background: #1e1f22; border: 1px solid #1a1b1e; color: #dbdee1; transition: border 0.2s; }
-        input:focus { border-color: #5865f2; outline: none; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        :root { --bg: #0e0f11; --surface: #16181c; --surface2: #1e2028; --border: rgba(255,255,255,0.07); --accent: #5865f2; --accent2: #4752c4; --accent-glow: rgba(88,101,242,0.25); --text: #e8eaf0; --muted: #6b7280; --danger: #f04747; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .bg-scene { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .bg-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: blobFloat 12s ease-in-out infinite; }
+        .bg-blob-1 { width: 500px; height: 500px; background: radial-gradient(circle, #5865f2, transparent); top: -100px; left: -100px; }
+        .bg-blob-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3ba55d, transparent); bottom: -80px; right: -80px; animation-delay: -5s; }
+        .bg-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+        @keyframes blobFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -20px) scale(1.05); } 66% { transform: translate(-20px, 15px) scale(0.95); } }
+        .card { position: relative; z-index: 10; width: 100%; max-width: 420px; margin: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 40px 36px; box-shadow: 0 32px 80px rgba(0,0,0,0.6); animation: cardIn 0.5s ease both; }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .logo-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 32px; }
+        .logo-icon { width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; box-shadow: 0 8px 24px var(--accent-glow); }
+        .logo-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; color: white; }
+        .tabs { display: flex; background: var(--surface2); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+        .tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-radius: 7px; border: none; background: transparent; }
+        .tab.active { background: var(--accent); color: white; }
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .field { margin-bottom: 18px; text-align: left; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+        input { width: 100%; background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--accent); }
+        .btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; font-family: 'Space Grotesk', sans-serif; }
+        .btn-google { width: 100%; padding: 12px; background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; }
+        .toast { display: none; position: fixed; top: 20px; background: rgba(240,71,71,0.9); padding: 10px 20px; border-radius: 8px; z-index: 100; }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4">
+<body>
+    <div id="toast" class="toast"></div>
+    <div class="bg-scene"><div class="bg-blob bg-blob-1"></div><div class="bg-blob bg-blob-2"></div></div>
+    <div class="bg-grid"></div>
 
-    <div class="auth-card w-full max-w-md p-8 rounded-lg text-center">
-        <div id="login-form">
-            <h1 class="text-2xl font-bold text-white mb-2">Boas-vindas de volta!</h1>
-            <p class="text-discord-muted mb-6 text-[#949ba4]">Estamos tão animados em te ver de novo!</p>
-            
-            <div class="text-left space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-[#b5bac1] uppercase">E-mail</label>
-                    <input type="email" id="login-email" class="w-full p-2.5 rounded mt-1 bg-[#1e1f22]">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-[#b5bac1] uppercase">Senha</label>
-                    <input type="password" id="login-password" class="w-full p-2.5 rounded mt-1 bg-[#1e1f22]">
-                </div>
-                <button onclick="handleLogin()" class="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white py-2.5 rounded font-medium transition-colors mt-2">Entrar</button>
-            </div>
-            <p class="text-sm text-[#949ba4] mt-4">Precisando de uma conta? <a href="#" onclick="toggleAuth()" class="text-[#00a8fc] hover:underline">Registre-se</a></p>
+    <div class="card">
+        <div class="logo-area">
+            <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg></div>
+            <div class="logo-title">BloxChatting</div>
         </div>
-
-        <div id="register-form" class="hidden">
-            <h1 class="text-2xl font-bold text-white mb-2">Criar uma conta</h1>
-            
-            <div class="text-left space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-[#b5bac1] uppercase">E-mail</label>
-                    <input type="email" id="reg-email" class="w-full p-2.5 rounded mt-1 bg-[#1e1f22]">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-[#b5bac1] uppercase">Nome de Usuário</label>
-                    <input type="text" id="reg-username" class="w-full p-2.5 rounded mt-1 bg-[#1e1f22]">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-[#b5bac1] uppercase">Senha</label>
-                    <input type="password" id="reg-password" class="w-full p-2.5 rounded mt-1 bg-[#1e1f22]">
-                </div>
-                <button onclick="handleRegister()" class="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white py-2.5 rounded font-medium transition-colors mt-2">Continuar</button>
-            </div>
-            <p class="text-sm text-[#949ba4] mt-4">Já tem uma conta? <a href="#" onclick="toggleAuth()" class="text-[#00a8fc] hover:underline">Entrar</a></p>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('login')">Login</button>
+            <button class="tab" onclick="switchTab('register')">Register</button>
+        </div>
+        <div id="form-login" class="form-section active">
+            <div class="field"><label>Email</label><input type="email" id="login-email"></div>
+            <div class="field"><label>Password</label><input type="password" id="login-password"></div>
+            <button class="btn-submit" onclick="handleLogin()">Login</button>
+            <button class="btn-google" onclick="handleGoogleLogin()">Login with Google</button>
+        </div>
+        <div id="form-register" class="form-section">
+            <div class="field"><label>Username</label><input type="text" id="reg-username"></div>
+            <div class="field"><label>Email</label><input type="email" id="reg-email"></div>
+            <div class="field"><label>Password</label><input type="password" id="reg-password"></div>
+            <button class="btn-submit" onclick="handleRegister()">Create Account</button>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c",
-            authDomain: "bloxchatting.firebaseapp.com",
-            databaseURL: "https://bloxchatting-default-rtdb.firebaseio.com",
-            projectId: "bloxchatting",
-            storageBucket: "bloxchatting.firebasestorage.app",
-            messagingSenderId: "600333968159",
-            appId: "1:600333968159:web:7a57e0e8ae2eed30a6062a"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c", authDomain: "bloxchatting.firebaseapp.com", databaseURL: "https://bloxchatting-default-rtdb.firebaseio.com", projectId: "bloxchatting", storageBucket: "bloxchatting.firebasestorage.app", messagingSenderId: "600333968159", appId: "1:600333968159:web:7a57e0e8ae2eed30a6062a" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const provider = new GoogleAuthProvider();
 
-        window.toggleAuth = () => {
-            document.getElementById('login-form').classList.toggle('hidden');
-            document.getElementById('register-form').classList.toggle('hidden');
+        // AUTO-LOGIN TRAVA
+        onAuthStateChanged(auth, user => { if(user) window.location.href = 'home.html'; });
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById('form-login').classList.toggle('active', tab === 'login');
+            document.getElementById('form-register').classList.toggle('active', tab === 'register');
         };
 
-        window.handleLogin = () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, email, pass)
-                .then(() => window.location.href = 'home.html')
-                .catch(err => alert("Erro no login: " + err.message));
+        window.handleLogin = async () => {
+            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } 
+            catch(e) { alert("Error: " + e.message); }
         };
 
-        window.handleRegister = () => {
-            const email = document.getElementById('reg-email').value;
+        window.handleRegister = async () => {
             const user = document.getElementById('reg-username').value;
-            const pass = document.getElementById('reg-password').value;
+            const email = document.getElementById('reg-email').value;
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, document.getElementById('reg-password').value);
+                await set(ref(db, 'users/' + cred.user.uid), { username: user, email: email, tag: Math.floor(1000+Math.random()*9000) });
+            } catch(e) { alert(e.message); }
+        };
 
-            createUserWithEmailAndPassword(auth, email, pass)
-                .then((cred) => {
-                    set(ref(db, 'users/' + cred.user.uid), {
-                        username: user,
-                        email: email,
-                        tag: Math.floor(1000 + Math.random() * 9000)
-                    });
-                    window.location.href = 'home.html';
-                })
-                .catch(err => alert("Erro no registro: " + err.message));
+        window.handleGoogleLogin = async () => {
+            try {
+                const res = await signInWithPopup(auth, provider);
+                const snap = await get(ref(db, 'users/' + res.user.uid));
+                if(!snap.exists()) await set(ref(db, 'users/' + res.user.uid), { username: res.user.displayName, email: res.user.email, tag: Math.floor(1000+Math.random()*9000) });
+            } catch(e) { console.log(e); }
         };
     </script>
 </body>
