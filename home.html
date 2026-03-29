@@ -3,134 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloxChatting - Home</title>
+    <title>BloxChatting | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #313338; color: #dbdee1; overflow: hidden; }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
+        /* Custom Scrollbar para Mobile */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1e1f22; border-radius: 10px; }
+
+        .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
+        .server-icon { transition: 0.2s; position: relative; }
+        .server-icon:hover, .server-icon.active { border-radius: 12px; background: #5865f2; color: white; }
+        .server-icon.active::before { content: ''; position: absolute; left: -12px; height: 32px; width: 4px; background: white; border-radius: 0 4px 4px 0; }
         
-        .bg-discord-dark { background: #1e1f22; }
-        .bg-discord-darker { background: #2b2d31; }
-        .bg-discord-darkest { background: #313338; }
-        .bg-discord-sidebar { background: #1e1f22; }
-        .text-discord-muted { color: #949ba4; }
-        .text-discord-normal { color: #dbdee1; }
-        
-        .server-icon { transition: all 0.2s ease; position: relative; }
-        .server-icon:hover { border-radius: 35%; }
-        .server-icon.active { border-radius: 35%; background-color: #5865f2; color: white; }
-        .server-icon::before {
-            content: ''; position: absolute; left: -8px; top: 50%;
-            transform: translateY(-50%); width: 0; height: 8px;
-            background: #fff; border-radius: 0 4px 4px 0; transition: all 0.2s ease;
-        }
-        .server-icon:hover::before { height: 20px; width: 4px; }
-        .server-icon.active::before { height: 40px; width: 4px; }
-        
-        .channel-item:hover { background: #35373c; color: #dbdee1; }
-        .channel-active { background: #404249; color: #fff; }
-        .message-item:hover { background: #2e3035; }
-        .chat-input:focus { border-color: #00aff4; outline: none; }
+        .role-admin { color: #f23f43; font-weight: bold; }
+        .role-member { color: #dbdee1; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
-    
-    <div class="hidden md:flex flex-col w-[72px] bg-discord-darkest items-center py-3 gap-2 overflow-y-auto shrink-0 z-20">
-        <button onclick="showDMs()" id="home-btn" class="server-icon active w-12 h-12 bg-discord-darker rounded-full flex items-center justify-center text-xl hover:bg-[#5865f2] transition-colors">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+<body class="h-screen flex">
+
+    <nav class="w-[72px] bg-[#1e1f22] flex flex-col items-center py-3 gap-2 overflow-y-auto shrink-0 shadow-xl">
+        <button onclick="viewDMs()" id="home-btn" class="server-icon active w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-white">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
         </button>
-        <div class="w-8 h-[2px] bg-discord-darker rounded-full my-1"></div>
-        
-        <div id="servers-list" class="w-full flex flex-col items-center gap-2"></div>
-        
-        <button onclick="createNewServer()" class="server-icon w-12 h-12 bg-discord-darker rounded-full flex items-center justify-center text-[#23a55a] text-2xl hover:bg-[#23a55a] hover:text-white transition-all">+</button>
-    </div>
-    
-    <div class="hidden md:flex flex-col w-60 bg-discord-sidebar shrink-0 z-10 border-r border-discord-dark">
-        <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm cursor-pointer hover:bg-discord-darker transition-colors">
-            <span class="font-semibold text-white truncate" id="server-name">Mensagens Diretas</span>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto px-2 py-2">
-            <div id="dms-view">
-                <button onclick="showFindFriend()" class="w-full bg-discord-darkest px-2 py-1.5 rounded text-xs text-discord-muted hover:text-discord-normal transition-colors flex items-center gap-2 mb-4">
-                    Buscar ou adicionar amigo
-                </button>
-                <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-2">Mensagens Diretas</div>
-                <div id="friends-list-container">
-                    <p class="text-xs text-discord-muted px-2">Carregando amigos...</p>
-                </div>
+        <div class="w-8 h-[2px] bg-[#313338] rounded-full"></div>
+        <div id="servers-list" class="flex flex-col gap-2"></div>
+        <button onclick="openModal('modal-create-server')" class="server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-[#23a55a] text-2xl">+</button>
+    </nav>
+
+    <aside class="w-60 bg-[#2b2d31] flex flex-col shrink-0">
+        <header id="sidebar-header" class="h-12 px-4 flex items-center justify-between shadow-sm border-b border-[#1f2124] font-bold text-white cursor-pointer hover:bg-[#35373c]">
+            <span class="truncate" id="sidebar-title">Mensagens Diretas</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+        </header>
+
+        <div class="flex-1 overflow-y-auto py-2 px-2" id="sidebar-content">
             </div>
-            
-            <div id="server-channels-view" class="hidden">
-                <div class="py-2">
-                    <div class="text-xs font-semibold text-discord-muted uppercase px-2 py-1 flex items-center justify-between">
-                        <span>CANAIS DE TEXTO</span>
-                        <button onclick="createNewChannel()" class="hover:text-white text-lg">+</button>
-                    </div>
-                    <div id="channels-list-container"></div>
-                </div>
+
+        <footer class="h-[52px] bg-[#232428] px-2 flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-500 shrink-0" id="user-pfp"></div>
+            <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white truncate" id="user-name">Carregando...</div>
+                <div class="text-[10px] text-[#949ba4]" id="user-id-tag">#0000</div>
             </div>
-        </div>
-        
-        <div class="h-[52px] bg-[#232428] px-2 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-                <div class="relative">
-                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&size=64" class="w-8 h-8 rounded-full">
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-[#23a55a] border-2 border-[#232428] rounded-full"></div>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div id="user-username" class="text-xs font-semibold text-white truncate">Carregando...</div>
-                    <div id="user-tag" class="text-[10px] text-discord-muted truncate">#0000</div>
-                </div>
-            </div>
-            <button onclick="logoutUser()" class="p-1.5 hover:bg-[#f23f43] text-discord-muted hover:text-white rounded transition-colors" title="Sair">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                </svg>
+            <button onclick="openModal('modal-account-settings')" class="p-1.5 hover:bg-[#3f4147] rounded text-[#949ba4] hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </button>
+        </footer>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-[#313338] min-w-0">
+        <header class="h-12 px-4 flex items-center justify-between border-b border-[#26272b] shadow-sm shrink-0">
+            <div class="flex items-center gap-2 overflow-hidden">
+                <span class="text-[#80848e] text-2xl font-light" id="chat-type-icon">#</span>
+                <span class="font-bold text-white truncate" id="chat-header-title">Selecione um chat</span>
+            </div>
+            <div id="server-actions" class="hidden flex gap-2">
+                <button onclick="copyInvite()" class="text-xs bg-[#5865f2] px-2 py-1 rounded text-white">Convidar</button>
+            </div>
+        </header>
+
+        <div id="messages-flow" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+
+        <div class="px-4 pb-6">
+            <div class="bg-[#383a40] rounded-lg px-4 py-2.5 flex items-center">
+                <input type="text" id="chat-input" placeholder="Conversar..." class="w-full bg-transparent outline-none text-[#dbdee1] placeholder-[#80848e]">
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-container" class="hidden fixed inset-0 z-50 modal flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-[#313338] w-full max-w-md rounded-lg p-6 shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-[#949ba4] hover:text-white">✕</button>
+            <div id="modal-body"></div>
         </div>
     </div>
-    
-    <div class="flex-1 flex flex-col bg-discord-darkest relative min-w-0">
-        <div class="h-12 px-4 flex items-center justify-between border-b border-discord shadow-sm shrink-0">
-            <div class="flex items-center gap-2">
-                <span class="text-discord-muted text-xl hidden" id="channel-hashtag">#</span>
-                <span id="current-channel-name" class="font-semibold text-white">Selecione um chat</span>
-            </div>
-        </div>
-        
-        <div id="messages-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-1">
-            <div class="flex flex-col items-center justify-center h-full opacity-50">
-                <p class="text-white">Escolha um servidor ou DM para começar.</p>
-            </div>
-        </div>
-        
-        <div class="px-4 pb-6 mt-2 shrink-0">
-            <div class="bg-discord-sidebar rounded-lg">
-                <input 
-                    type="text" 
-                    id="message-input" 
-                    placeholder="Conversar..." 
-                    class="chat-input w-full bg-transparent px-4 py-3 text-discord-normal placeholder-discord-muted outline-none disabled:opacity-50" 
-                    disabled
-                    onkeypress="if(event.key==='Enter') sendMessage()"
-                >
-            </div>
-        </div>
-    </div>
-    
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, get, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        
+        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c",
             authDomain: "bloxchatting.firebaseapp.com",
@@ -140,238 +96,265 @@
             messagingSenderId: "600333968159",
             appId: "1:600333968159:web:7a57e0e8ae2eed30a6062a"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        
-        let currentUser = null;
-        let currentServerId = null;
-        let currentChannelId = null;
-        
-        // 1. TRAVA DE SEGURANÇA (Auth Guard)
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                // Se não estiver logado, chuta para o index.html
-                window.location.href = "index.html"; 
-                return;
-            }
-            currentUser = user;
+
+        let user = null;
+        let activeServer = null;
+        let activeChannel = null;
+        let isDMView = true;
+
+        // --- AUTH & INITIAL LOAD ---
+        onAuthStateChanged(auth, async (u) => {
+            if (!u) return window.location.href = 'index.html';
+            user = u;
             
-            // Carrega perfil visual
-            const userSnap = await get(ref(db, `users/${user.uid}`));
-            if(userSnap.exists()) {
-                const data = userSnap.val();
-                document.getElementById('user-username').textContent = data.username;
-                document.getElementById('user-tag').textContent = `#${data.tag || '0000'}`;
-            } else {
-                document.getElementById('user-username').textContent = user.email.split('@')[0];
-            }
-            
+            // Verifica Convite na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('invite')) joinServer(urlParams.get('invite'));
+
+            loadUserProfile();
             loadServers();
-            loadDMs();
+            viewDMs();
         });
 
-        // 2. FUNÇÃO DE LOGOUT
-        window.logoutUser = () => {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            }).catch((error) => {
-                alert("Erro ao sair: " + error.message);
+        async function loadUserProfile() {
+            onValue(ref(db, `users/${user.uid}`), snap => {
+                const data = snap.val();
+                document.getElementById('user-name').textContent = data.username;
+                document.getElementById('user-id-tag').textContent = `#${data.tag}`;
             });
-        };
+        }
 
-        // 3. CARREGAR SERVIDORES
+        // --- SERVIDORES ---
         function loadServers() {
-            onValue(ref(db, `servers`), (snapshot) => {
-                const container = document.getElementById('servers-list');
-                container.innerHTML = '';
-                
-                if (!snapshot.exists()) return;
-
-                snapshot.forEach(child => {
-                    const server = child.val();
-                    const btn = document.createElement('button');
-                    btn.className = `server-icon w-12 h-12 rounded-full overflow-hidden hover:rounded-2xl transition-all ${currentServerId === child.key ? 'active' : ''}`;
-                    btn.innerHTML = `<img src="https://ui-avatars.com/api/?name=${encodeURIComponent(server.name)}&background=random&color=fff" class="w-full h-full object-cover">`;
-                    btn.onclick = () => selectServer(child.key, server.name);
-                    container.appendChild(btn);
+            onValue(ref(db, `users/${user.uid}/servers`), snap => {
+                const list = document.getElementById('servers-list');
+                list.innerHTML = '';
+                snap.forEach(s => {
+                    get(ref(db, `servers/${s.key}`)).then(serverSnap => {
+                        const data = serverSnap.val();
+                        if(!data) return;
+                        const btn = document.createElement('button');
+                        btn.className = "server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center overflow-hidden";
+                        btn.innerHTML = `<img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random">`;
+                        btn.onclick = () => selectServer(s.key, data.name);
+                        list.appendChild(btn);
+                    });
                 });
             });
         }
 
-        // 4. CARREGAR CANAIS
-        function loadChannels(serverId) {
-            onValue(ref(db, `servers/${serverId}/channels`), (snapshot) => {
-                const container = document.getElementById('channels-list-container');
-                container.innerHTML = '';
-                
-                if (!snapshot.exists()) {
-                    container.innerHTML = `<p class="text-xs text-discord-muted px-3">Sem canais</p>`;
-                    return;
-                }
+        async function selectServer(id, name) {
+            isDMView = false;
+            activeServer = id;
+            activeChannel = null;
+            document.getElementById('sidebar-title').textContent = name;
+            document.getElementById('chat-type-icon').textContent = "#";
+            document.getElementById('server-actions').classList.remove('hidden');
+            renderServerChannels();
+        }
 
-                let firstChannel = null;
-                snapshot.forEach(child => {
-                    if (!firstChannel) firstChannel = child.key;
-                    
-                    const channel = child.val();
-                    const div = document.createElement('div');
-                    div.className = `channel-item px-2 py-1 rounded cursor-pointer flex items-center gap-2 text-sm mx-1 ${currentChannelId === child.key ? 'channel-active' : ''}`;
-                    div.innerHTML = `<span class="text-discord-muted">#</span> <span>${channel.name}</span>`;
-                    div.onclick = () => selectChannel(child.key, channel.name, 'server');
-                    container.appendChild(div);
+        // --- CANAIS E CATEGORIAS ---
+        function renderServerChannels() {
+            const container = document.getElementById('sidebar-content');
+            onValue(ref(db, `servers/${activeServer}/categories`), snap => {
+                container.innerHTML = `<button onclick="openServerSettings()" class="w-full text-left p-2 text-xs font-bold text-[#949ba4] hover:text-white uppercase mb-4">⚙ Configs do Grupo</button>`;
+                snap.forEach(cat => {
+                    const catDiv = document.createElement('div');
+                    catDiv.innerHTML = `
+                        <div class="flex justify-between items-center px-1 mt-4 mb-1">
+                            <span class="text-[11px] font-bold text-[#949ba4] uppercase">${cat.val().name}</span>
+                            <button onclick="addChannel('${cat.key}')" class="text-[#949ba4] hover:text-white text-lg">+</button>
+                        </div>
+                        <div id="cat-${cat.key}" class="space-y-0.5"></div>
+                    `;
+                    container.appendChild(catDiv);
+
+                    // Listar Canais da Categoria
+                    const chanSnap = cat.child('channels');
+                    chanSnap.forEach(ch => {
+                        const btn = document.createElement('div');
+                        btn.className = "p-2 flex items-center gap-2 cursor-pointer rounded hover:bg-[#35373c] text-[#80848e] hover:text-white";
+                        btn.innerHTML = `<span>#</span> <span class="truncate">${ch.val().name}</span>`;
+                        btn.onclick = () => { activeChannel = ch.key; loadMessages(); };
+                        document.getElementById(`cat-${cat.key}`).appendChild(btn);
+                    });
                 });
-
-                if (firstChannel && !currentChannelId) {
-                    const chData = snapshot.val()[firstChannel];
-                    selectChannel(firstChannel, chData.name, 'server');
-                }
+                
+                // Botão para criar categoria
+                const addCat = document.createElement('button');
+                addCat.className = "w-full text-left p-2 text-xs text-[#949ba4] hover:text-white italic mt-4";
+                addCat.innerText = "+ Nova Categoria";
+                addCat.onclick = createCategory;
+                container.appendChild(addCat);
             });
         }
 
-        // 5. CARREGAR MENSAGENS
+        // --- MENSAGENS ---
         function loadMessages() {
-            if (!currentChannelId) return;
-
-            const input = document.getElementById('message-input');
-            input.disabled = false; // Ativa o input
-
-            let path = currentServerId 
-                ? `servers/${currentServerId}/channels/${currentChannelId}/messages`
-                : `dms/${currentChannelId}/messages`;
-
-            onValue(ref(db, path), (snapshot) => {
-                const container = document.getElementById('messages-container');
-                container.innerHTML = '';
-
-                if (!snapshot.exists()) {
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-full opacity-50">
-                            <p class="text-white font-medium">O chat está vazio.</p>
-                            <p class="text-xs text-discord-muted">Seja o primeiro a enviar uma mensagem!</p>
-                        </div>`;
-                    return;
-                }
-
-                const msgs = [];
-                snapshot.forEach(child => msgs.push(child.val()));
-                msgs.sort((a, b) => a.timestamp - b.timestamp);
-
-                msgs.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.className = 'message-item py-1 px-2 rounded flex gap-3';
-                    const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    div.innerHTML = `
-                        <img src="${msg.userAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(msg.username)}" class="w-10 h-10 rounded-full mt-1 shrink-0">
-                        <div class="min-w-0">
+            if(!activeChannel) return;
+            const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
+            onValue(ref(db, path), snap => {
+                const flow = document.getElementById('messages-flow');
+                flow.innerHTML = '';
+                snap.forEach(m => {
+                    const data = m.val();
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = "flex gap-4 group";
+                    msgDiv.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-gray-600 shrink-0"></div>
+                        <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-semibold text-white text-sm hover:underline cursor-pointer">${msg.username}</span>
-                                <span class="text-xs text-discord-muted">${time}</span>
+                                <span class="font-bold text-white text-sm">${data.user}</span>
+                                <span class="text-[10px] text-[#949ba4]">${new Date(data.time).toLocaleTimeString()}</span>
                             </div>
-                            <div class="text-discord-normal text-sm break-words">${msg.content}</div>
+                            <p class="text-sm text-[#dbdee1]">${data.text}</p>
                         </div>
                     `;
-                    container.appendChild(div);
+                    flow.appendChild(msgDiv);
                 });
-                container.scrollTop = container.scrollHeight;
+                flow.scrollTop = flow.scrollHeight;
             });
         }
 
-        // 6. ENVIAR MENSAGEM
-        window.sendMessage = async () => {
-            const input = document.getElementById('message-input');
-            const content = input.value.trim();
-            if (!content || !currentUser || !currentChannelId) return;
-
-            input.value = ''; // Limpa rápido para fluidez
-
-            const userSnap = await get(ref(db, `users/${currentUser.uid}`));
-            const userData = userSnap.val() || { username: currentUser.email.split('@')[0] };
-
-            const path = currentServerId 
-                ? `servers/${currentServerId}/channels/${currentChannelId}/messages`
-                : `dms/${currentChannelId}/messages`;
-
-            await push(ref(db, path), {
-                userId: currentUser.uid,
-                username: userData.username,
-                content: content,
-                timestamp: Date.now()
-            });
+        // --- AÇÕES DO INPUT ---
+        document.getElementById('chat-input').onkeypress = (e) => {
+            if(e.key === 'Enter' && e.target.value.trim() && activeChannel) {
+                const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
+                push(ref(db, path), {
+                    user: document.getElementById('user-name').textContent,
+                    text: e.target.value,
+                    time: Date.now()
+                });
+                e.target.value = '';
+            }
         };
 
-        // 7. NAVEGAÇÃO
-        window.selectServer = (serverId, serverName) => {
-            currentServerId = serverId;
-            currentChannelId = null; 
+        // --- MODAIS E CONFIGURAÇÕES ---
+        window.openModal = (type) => {
+            const container = document.getElementById('modal-container');
+            const body = document.getElementById('modal-body');
+            container.classList.remove('hidden');
             
-            document.getElementById('dms-view').classList.add('hidden');
-            document.getElementById('server-channels-view').classList.remove('hidden');
-            document.getElementById('server-name').textContent = serverName;
-            document.getElementById('channel-hashtag').classList.remove('hidden');
-            
-            document.querySelectorAll('.server-icon').forEach(el => el.classList.remove('active'));
-            if(event) event.currentTarget.classList.add('active');
-            
-            loadChannels(serverId);
+            if(type === 'modal-create-server') {
+                body.innerHTML = `
+                    <h2 class="text-xl font-bold text-white mb-4">Criar Servidor</h2>
+                    <input id="new-server-name" type="text" class="w-full p-2 bg-[#1e1f22] rounded mb-4 text-white" placeholder="Nome do servidor">
+                    <button onclick="confirmCreateServer()" class="w-full bg-[#5865f2] py-2 rounded text-white font-bold">Criar</button>
+                `;
+            }
+
+            if(type === 'modal-account-settings') {
+                body.innerHTML = `
+                    <h2 class="text-xl font-bold text-white mb-4">Configurações de Conta</h2>
+                    <button onclick="logout()" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold mb-2">Sair (Logout)</button>
+                    <button onclick="closeModal()" class="w-full bg-[#4e5058] py-2 rounded text-white font-bold">Fechar</button>
+                `;
+            }
         };
 
-        window.selectChannel = (channelId, channelName, type) => {
-            currentChannelId = channelId;
-            document.getElementById('current-channel-name').textContent = channelName;
-            document.getElementById('message-input').placeholder = `Conversar em #${channelName}...`;
-            
-            document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('channel-active'));
-            if(event && event.currentTarget) event.currentTarget.classList.add('channel-active');
-            
-            loadMessages();
+        window.closeModal = () => document.getElementById('modal-container').classList.add('hidden');
+
+        window.confirmCreateServer = async () => {
+            const name = document.getElementById('new-server-name').value;
+            if(!name) return;
+            const sRef = push(ref(db, 'servers'));
+            const serverId = sRef.key;
+            await set(sRef, { name, owner: user.uid });
+            await set(ref(db, `users/${user.uid}/servers/${serverId}`), true);
+            // Categoria inicial
+            const catRef = push(ref(db, `servers/${serverId}/categories`));
+            await set(catRef, { name: 'Geral' });
+            await push(ref(db, `servers/${serverId}/categories/${catRef.key}/channels`), { name: 'geral' });
+            closeModal();
         };
 
-        window.showDMs = () => {
-            currentServerId = null;
-            currentChannelId = null;
-            
-            document.getElementById('dms-view').classList.remove('hidden');
-            document.getElementById('server-channels-view').classList.add('hidden');
-            document.getElementById('server-name').textContent = 'Mensagens Diretas';
-            document.getElementById('current-channel-name').textContent = 'Amigos';
-            document.getElementById('channel-hashtag').classList.add('hidden');
-            
-            document.getElementById('messages-container').innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full opacity-50">
-                    <p class="text-white">Selecione uma DM para conversar.</p>
-                </div>`;
-            document.getElementById('message-input').disabled = true;
-            document.getElementById('message-input').placeholder = "Selecione um amigo primeiro...";
-            
-            document.querySelectorAll('.server-icon').forEach(el => el.classList.remove('active'));
-            document.getElementById('home-btn').classList.add('active');
+        window.openServerSettings = async () => {
+            const sSnap = await get(ref(db, `servers/${activeServer}`));
+            const data = sSnap.val();
+            const isAdmin = data.owner === user.uid;
+
+            document.getElementById('modal-container').classList.remove('hidden');
+            document.getElementById('modal-body').innerHTML = `
+                <h2 class="text-xl font-bold text-white mb-4">Configurações de ${data.name}</h2>
+                <p class="text-xs text-[#949ba4] mb-4 text-center">ID do Grupo: ${activeServer}</p>
+                ${isAdmin ? `
+                    <button onclick="deleteServer()" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold mb-2">EXCLUIR GRUPO</button>
+                ` : `<button onclick="leaveServer()" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold mb-2">SAIR DO GRUPO</button>`}
+            `;
         };
 
-        // 8. CRIAÇÃO BÁSICA
-        window.createNewServer = async () => {
-            const name = prompt("Nome do novo Servidor:");
-            if (!name) return;
-            const newServerRef = push(ref(db, 'servers'));
-            await set(newServerRef, { name: name, owner: currentUser.uid });
-            await push(ref(db, `servers/${newServerRef.key}/channels`), { name: 'geral' });
+        window.deleteServer = async () => {
+            if(!confirm("TEM CERTEZA? Isso não pode ser desfeito.")) return;
+            await remove(ref(db, `servers/${activeServer}`));
+            await remove(ref(db, `users/${user.uid}/servers/${activeServer}`));
+            location.reload();
         };
 
-        window.createNewChannel = async () => {
-            if (!currentServerId) return;
-            const name = prompt("Nome do novo Canal (ex: avisos):");
-            if (!name) return;
-            await push(ref(db, `servers/${currentServerId}/channels`), { name: name.toLowerCase().replace(/\s/g, '-') });
+        window.logout = () => signOut(auth).then(() => location.href = 'index.html');
+
+        window.copyInvite = () => {
+            const link = `${location.origin}${location.pathname}?invite=${activeServer}`;
+            navigator.clipboard.writeText(link);
+            alert("Link de convite copiado!");
+        };
+
+        async function joinServer(id) {
+            await set(ref(db, `users/${user.uid}/servers/${id}`), true);
+            window.history.replaceState({}, '', 'home.html');
+            location.reload();
+        }
+
+        // Funções de Canais
+        window.createCategory = async () => {
+            const n = prompt("Nome da Categoria:");
+            if(n) push(ref(db, `servers/${activeServer}/categories`), { name: n });
+        };
+        window.addChannel = (catId) => {
+            const n = prompt("Nome do Canal:");
+            if(n) push(ref(db, `servers/${activeServer}/categories/${catId}/channels`), { name: n.toLowerCase() });
+        };
+
+        window.viewDMs = () => {
+            isDMView = true;
+            document.getElementById('sidebar-title').textContent = "Mensagens Diretas";
+            document.getElementById('server-actions').classList.add('hidden');
+            document.getElementById('sidebar-content').innerHTML = `
+                <button onclick="addFriend()" class="w-full text-left p-2 text-xs font-bold text-[#949ba4] hover:text-white uppercase">Buscar Amigos +</button>
+                <div id="dm-list-flow" class="mt-4 space-y-1"></div>
+            `;
+            loadDMs();
         };
 
         function loadDMs() {
-            document.getElementById('friends-list-container').innerHTML = `<p class="text-xs text-discord-muted px-2">Suas DMs aparecerão aqui em breve.</p>`;
+            onValue(ref(db, `users/${user.uid}/conversations`), snap => {
+                const flow = document.getElementById('dm-list-flow');
+                if(!flow) return;
+                flow.innerHTML = '';
+                snap.forEach(d => {
+                    const div = document.createElement('div');
+                    div.className = "p-2 flex items-center gap-3 cursor-pointer rounded hover:bg-[#35373c]";
+                    div.innerHTML = `<div class="w-8 h-8 rounded-full bg-gray-500"></div> <span class="text-sm font-medium">${d.val().withName}</span>`;
+                    div.onclick = () => { activeChannel = d.key; document.getElementById('chat-header-title').textContent = d.val().withName; loadMessages(); };
+                    flow.appendChild(div);
+                });
+            });
         }
-        
-        window.showFindFriend = () => {
-            alert("Sistema de buscar amigos será implementado em breve!");
+
+        window.addFriend = async () => {
+            const name = prompt("Nome exato do usuário:");
+            if(!name) return;
+            const uSnap = await get(ref(db, 'users'));
+            uSnap.forEach(u => {
+                if(u.val().username === name && u.key !== user.uid) {
+                    const id = [user.uid, u.key].sort().join("_");
+                    set(ref(db, `users/${user.uid}/conversations/${id}`), { withName: name, withId: u.key });
+                    set(ref(db, `users/${u.key}/conversations/${id}`), { withName: document.getElementById('user-name').textContent, withId: user.uid });
+                }
+            });
         };
     </script>
 </body>
