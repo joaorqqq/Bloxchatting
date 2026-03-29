@@ -2,28 +2,23 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BloxChatting | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #313338; color: #dbdee1; overflow: hidden; }
-        
-        /* Custom Scrollbar para Mobile */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #1e1f22; border-radius: 10px; }
-
-        .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
-        .server-icon { transition: 0.2s; position: relative; }
+        .server-icon { transition: 0.2s; position: relative; cursor: pointer; }
         .server-icon:hover, .server-icon.active { border-radius: 12px; background: #5865f2; color: white; }
         .server-icon.active::before { content: ''; position: absolute; left: -12px; height: 32px; width: 4px; background: white; border-radius: 0 4px 4px 0; }
-        
-        .role-admin { color: #f23f43; font-weight: bold; }
-        .role-member { color: #dbdee1; }
+        input[type="file"] { display: none; }
     </style>
 </head>
-<body class="h-screen flex">
+<body class="h-[100dvh] flex">
 
     <nav class="w-[72px] bg-[#1e1f22] flex flex-col items-center py-3 gap-2 overflow-y-auto shrink-0 shadow-xl">
         <button onclick="viewDMs()" id="home-btn" class="server-icon active w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-white">
@@ -37,11 +32,16 @@
     <aside class="w-60 bg-[#2b2d31] flex flex-col shrink-0">
         <header id="sidebar-header" class="h-12 px-4 flex items-center justify-between shadow-sm border-b border-[#1f2124] font-bold text-white cursor-pointer hover:bg-[#35373c]">
             <span class="truncate" id="sidebar-title">Mensagens Diretas</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
         </header>
 
-        <div class="flex-1 overflow-y-auto py-2 px-2" id="sidebar-content">
+        <div class="flex-1 overflow-y-auto py-2 px-2" id="sidebar-content"></div>
+
+        <div id="voice-status" class="hidden bg-[#232428] p-3 border-t border-[#1e1f22]">
+            <div class="flex items-center gap-2 text-green-500 font-bold text-[10px] mb-2 uppercase">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Em Call
             </div>
+            <button onclick="leaveVoice()" class="w-full bg-[#da373c] text-white text-[10px] py-1.5 rounded font-bold">Sair da Call</button>
+        </div>
 
         <footer class="h-[52px] bg-[#232428] px-2 flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-indigo-500 shrink-0" id="user-pfp"></div>
@@ -62,31 +62,40 @@
                 <span class="font-bold text-white truncate" id="chat-header-title">Selecione um chat</span>
             </div>
             <div id="server-actions" class="hidden flex gap-2">
-                <button onclick="copyInvite()" class="text-xs bg-[#5865f2] px-2 py-1 rounded text-white">Convidar</button>
+                <button onclick="copyInvite()" class="text-[10px] bg-[#5865f2] px-2 py-1 rounded text-white font-bold">CONVIDAR</button>
             </div>
         </header>
 
         <div id="messages-flow" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
 
         <div class="px-4 pb-6">
-            <div class="bg-[#383a40] rounded-lg px-4 py-2.5 flex items-center">
-                <input type="text" id="chat-input" placeholder="Conversar..." class="w-full bg-transparent outline-none text-[#dbdee1] placeholder-[#80848e]">
+            <div class="bg-[#383a40] rounded-lg px-4 flex items-center gap-3">
+                <label class="cursor-pointer text-[#b5bac1] hover:text-white text-2xl font-light">
+                    +
+                    <input type="file" id="file-input" onchange="handleFileUpload(event)">
+                </label>
+                <input type="text" id="chat-input" placeholder="Conversar..." class="w-full bg-transparent outline-none text-[#dbdee1] py-3">
+                <button id="mic-btn" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()" class="text-[#b5bac1] hover:text-red-500 transition text-xl px-2">
+                    🎤
+                </button>
             </div>
         </div>
     </main>
 
-    <div id="modal-container" class="hidden fixed inset-0 z-50 modal flex items-center justify-center p-4">
-        <div id="modal-content" class="bg-[#313338] w-full max-w-md rounded-lg p-6 shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-[#949ba4] hover:text-white">✕</button>
+    <div id="modal-container" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-[#313338] w-full max-w-md rounded-lg p-6 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-[#949ba4]">✕</button>
             <div id="modal-body"></div>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+        // 1. CONFIGS
         const firebaseConfig = {
             apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c",
             authDomain: "bloxchatting.firebaseapp.com",
@@ -96,25 +105,32 @@
             messagingSenderId: "600333968159",
             appId: "1:600333968159:web:7a57e0e8ae2eed30a6062a"
         };
+        const supabaseUrl = 'https://venesewmqcecxbnlxwlr.supabase.co';
+        const supabaseKey = '8070833db02b205a5c54e5ca75817c4e';
+        const agoraAppId = 'e7f6e9aeecf14b2ba10e3f40be9f56e7';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
         let user = null;
         let activeServer = null;
         let activeChannel = null;
         let isDMView = true;
 
-        // --- AUTH & INITIAL LOAD ---
-        onAuthStateChanged(auth, async (u) => {
+        const safe = (str) => {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        };
+
+        // 2. AUTH
+        onAuthStateChanged(auth, u => {
             if (!u) return window.location.href = 'index.html';
             user = u;
-            
-            // Verifica Convite na URL
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('invite')) joinServer(urlParams.get('invite'));
-
             loadUserProfile();
             loadServers();
             viewDMs();
@@ -123,22 +139,24 @@
         async function loadUserProfile() {
             onValue(ref(db, `users/${user.uid}`), snap => {
                 const data = snap.val();
-                document.getElementById('user-name').textContent = data.username;
-                document.getElementById('user-id-tag').textContent = `#${data.tag}`;
+                if(data) {
+                    document.getElementById('user-name').textContent = data.username;
+                    document.getElementById('user-id-tag').textContent = `#${data.tag}`;
+                }
             });
         }
 
-        // --- SERVIDORES ---
+        // 3. SERVIDORES & CANAIS
         function loadServers() {
             onValue(ref(db, `users/${user.uid}/servers`), snap => {
                 const list = document.getElementById('servers-list');
                 list.innerHTML = '';
                 snap.forEach(s => {
-                    get(ref(db, `servers/${s.key}`)).then(serverSnap => {
-                        const data = serverSnap.val();
+                    get(ref(db, `servers/${s.key}`)).then(svSnap => {
+                        const data = svSnap.val();
                         if(!data) return;
                         const btn = document.createElement('button');
-                        btn.className = "server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center overflow-hidden";
+                        btn.className = "server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center overflow-hidden mb-1";
                         btn.innerHTML = `<img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random">`;
                         btn.onclick = () => selectServer(s.key, data.name);
                         list.appendChild(btn);
@@ -147,53 +165,50 @@
             });
         }
 
-        async function selectServer(id, name) {
+        window.selectServer = (id, name) => {
             isDMView = false;
             activeServer = id;
             activeChannel = null;
             document.getElementById('sidebar-title').textContent = name;
-            document.getElementById('chat-type-icon').textContent = "#";
             document.getElementById('server-actions').classList.remove('hidden');
             renderServerChannels();
-        }
+        };
 
-        // --- CANAIS E CATEGORIAS ---
         function renderServerChannels() {
             const container = document.getElementById('sidebar-content');
             onValue(ref(db, `servers/${activeServer}/categories`), snap => {
-                container.innerHTML = `<button onclick="openServerSettings()" class="w-full text-left p-2 text-xs font-bold text-[#949ba4] hover:text-white uppercase mb-4">⚙ Configs do Grupo</button>`;
+                container.innerHTML = `<button onclick="openServerSettings()" class="w-full text-left p-2 text-[10px] font-bold text-[#949ba4] hover:text-white uppercase mb-2">⚙ Configs do Grupo</button>`;
                 snap.forEach(cat => {
+                    const data = cat.val();
                     const catDiv = document.createElement('div');
                     catDiv.innerHTML = `
                         <div class="flex justify-between items-center px-1 mt-4 mb-1">
-                            <span class="text-[11px] font-bold text-[#949ba4] uppercase">${cat.val().name}</span>
-                            <button onclick="addChannel('${cat.key}')" class="text-[#949ba4] hover:text-white text-lg">+</button>
+                            <span class="text-[11px] font-bold text-[#949ba4] uppercase">${safe(data.name)}</span>
+                            <button onclick="addChannel('${cat.key}')" class="text-[#949ba4] hover:text-white">+</button>
                         </div>
                         <div id="cat-${cat.key}" class="space-y-0.5"></div>
                     `;
                     container.appendChild(catDiv);
-
-                    // Listar Canais da Categoria
-                    const chanSnap = cat.child('channels');
-                    chanSnap.forEach(ch => {
-                        const btn = document.createElement('div');
-                        btn.className = "p-2 flex items-center gap-2 cursor-pointer rounded hover:bg-[#35373c] text-[#80848e] hover:text-white";
-                        btn.innerHTML = `<span>#</span> <span class="truncate">${ch.val().name}</span>`;
-                        btn.onclick = () => { activeChannel = ch.key; loadMessages(); };
-                        document.getElementById(`cat-${cat.key}`).appendChild(btn);
-                    });
+                    
+                    if(data.channels) {
+                        Object.keys(data.channels).forEach(chId => {
+                            const ch = data.channels[chId];
+                            const btn = document.createElement('div');
+                            btn.className = "p-2 flex items-center gap-2 cursor-pointer rounded hover:bg-[#35373c] text-[#80848e] hover:text-white text-sm";
+                            btn.innerHTML = `<span>${ch.type === 'voice' ? '🔊' : '#'}</span> <span class="truncate">${safe(ch.name)}</span>`;
+                            btn.onclick = () => {
+                                if(ch.type === 'voice') joinVoice(chId, ch.name);
+                                else { activeChannel = chId; loadMessages(); }
+                            };
+                            document.getElementById(`cat-${cat.key}`).appendChild(btn);
+                        });
+                    }
                 });
-                
-                // Botão para criar categoria
-                const addCat = document.createElement('button');
-                addCat.className = "w-full text-left p-2 text-xs text-[#949ba4] hover:text-white italic mt-4";
-                addCat.innerText = "+ Nova Categoria";
-                addCat.onclick = createCategory;
-                container.appendChild(addCat);
+                container.innerHTML += `<button onclick="createCategory()" class="w-full text-left p-2 text-xs text-[#949ba4] hover:text-white italic mt-4">+ Nova Categoria</button>`;
             });
         }
 
-        // --- MENSAGENS ---
+        // 4. MENSAGENS E RENDERS
         function loadMessages() {
             if(!activeChannel) return;
             const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
@@ -204,14 +219,19 @@
                     const data = m.val();
                     const msgDiv = document.createElement('div');
                     msgDiv.className = "flex gap-4 group";
+                    let content = `<p class="text-sm text-[#dbdee1]">${safe(data.text)}</p>`;
+                    
+                    if(data.type === "image") content = `<img src="${data.text}" class="max-w-[250px] rounded-lg mt-2 border border-[#1e1f22] cursor-pointer" onclick="window.open('${data.text}')">`;
+                    if(data.type === "audio") content = `<audio src="${data.text}" controls class="h-8 mt-2 w-full max-w-[240px]"></audio>`;
+                    
                     msgDiv.innerHTML = `
-                        <div class="w-10 h-10 rounded-full bg-gray-600 shrink-0"></div>
+                        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shrink-0">${data.user[0]}</div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-bold text-white text-sm">${data.user}</span>
+                                <span class="font-bold text-white text-sm">${safe(data.user)}</span>
                                 <span class="text-[10px] text-[#949ba4]">${new Date(data.time).toLocaleTimeString()}</span>
                             </div>
-                            <p class="text-sm text-[#dbdee1]">${data.text}</p>
+                            ${content}
                         </div>
                     `;
                     flow.appendChild(msgDiv);
@@ -220,140 +240,151 @@
             });
         }
 
-        // --- AÇÕES DO INPUT ---
-        document.getElementById('chat-input').onkeypress = (e) => {
-            if(e.key === 'Enter' && e.target.value.trim() && activeChannel) {
-                const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
-                push(ref(db, path), {
-                    user: document.getElementById('user-name').textContent,
-                    text: e.target.value,
-                    time: Date.now()
+        // 5. VOZ (Agora.io)
+        let rtc = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+        let mic;
+        window.joinVoice = async (id, name) => {
+            try {
+                await rtc.join(agoraAppId, id, null);
+                mic = await AgoraRTC.createMicrophoneAudioTrack();
+                await rtc.publish([mic]);
+                document.getElementById('voice-status').classList.remove('hidden');
+                rtc.on("user-published", async (u, type) => {
+                    await rtc.subscribe(u, type);
+                    if (type === "audio") u.audioTrack.play();
                 });
+            } catch (e) { alert("Erro ao entrar na call."); }
+        };
+        window.leaveVoice = async () => {
+            if(mic) { mic.stop(); mic.close(); }
+            await rtc.leave();
+            location.reload();
+        };
+
+        // 6. UPLOADS (Supabase)
+        window.handleFileUpload = async (e) => {
+            const file = e.target.files[0];
+            if (!file || !activeChannel) return;
+            const input = document.getElementById('chat-input');
+            input.placeholder = "Enviando...";
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = ev => {
+                    const img = new Image();
+                    img.src = ev.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if(w > 1080) { h *= 1080/w; w = 1080; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0,0,w,h);
+                        canvas.toBlob(blob => uploadSupabase(new File([blob], `${Date.now()}.jpg`, {type: 'image/jpeg'}), "image"), 'image/jpeg', 0.7);
+                    };
+                };
+            } else {
+                if(file.size > 5 * 1024 * 1024) return alert("Máximo 5MB");
+                uploadSupabase(file, "file");
+            }
+        };
+
+        async function uploadSupabase(file, type) {
+            const path = `uploads/${Date.now()}_${file.name}`;
+            const { error } = await supabase.storage.from('Bloxchatting').upload(path, file);
+            if (!error) {
+                const { data: { publicUrl } } = supabase.storage.from('Bloxchatting').getPublicUrl(path);
+                sendMessage(publicUrl, type);
+            }
+            document.getElementById('chat-input').placeholder = "Conversar...";
+        }
+
+        // 7. INPUT & MENSAGENS ENVIAR
+        document.getElementById('chat-input').onkeypress = e => {
+            if(e.key === 'Enter' && e.target.value.trim() && activeChannel) {
+                sendMessage(e.target.value, "text");
                 e.target.value = '';
             }
         };
 
-        // --- MODAIS E CONFIGURAÇÕES ---
-        window.openModal = (type) => {
-            const container = document.getElementById('modal-container');
-            const body = document.getElementById('modal-body');
-            container.classList.remove('hidden');
-            
-            if(type === 'modal-create-server') {
-                body.innerHTML = `
-                    <h2 class="text-xl font-bold text-white mb-4">Criar Servidor</h2>
-                    <input id="new-server-name" type="text" class="w-full p-2 bg-[#1e1f22] rounded mb-4 text-white" placeholder="Nome do servidor">
-                    <button onclick="confirmCreateServer()" class="w-full bg-[#5865f2] py-2 rounded text-white font-bold">Criar</button>
-                `;
-            }
+        function sendMessage(val, type) {
+            const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
+            push(ref(db, path), {
+                user: document.getElementById('user-name').textContent,
+                text: val,
+                type: type,
+                time: Date.now()
+            });
+        }
 
+        // 8. ÁUDIO RECORD
+        let rec; let chunks = [];
+        window.startRecording = async () => {
+            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+            rec = new MediaRecorder(s);
+            chunks = [];
+            rec.ondataavailable = e => chunks.push(e.data);
+            rec.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/mp3' });
+                uploadSupabase(new File([blob], `mic_${Date.now()}.mp3`, {type: 'audio/mp3'}), "audio");
+            };
+            rec.start();
+            document.getElementById('mic-btn').classList.add('text-red-500');
+        };
+        window.stopRecording = () => { if(rec) rec.stop(); document.getElementById('mic-btn').classList.remove('text-red-500'); };
+
+        // 9. MODAIS E UTILITÁRIOS
+        window.openModal = type => {
+            const b = document.getElementById('modal-body');
+            document.getElementById('modal-container').classList.remove('hidden');
+            if(type === 'modal-create-server') {
+                b.innerHTML = `<h2 class="text-xl font-bold text-white mb-4">Criar Servidor</h2>
+                <input id="new-server-name" type="text" class="w-full p-2 bg-[#1e1f22] rounded mb-4 text-white" placeholder="Nome do servidor">
+                <button onclick="confirmCreateServer()" class="w-full bg-[#5865f2] py-2 rounded text-white font-bold">Criar</button>`;
+            }
             if(type === 'modal-account-settings') {
-                body.innerHTML = `
-                    <h2 class="text-xl font-bold text-white mb-4">Configurações de Conta</h2>
-                    <button onclick="logout()" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold mb-2">Sair (Logout)</button>
-                    <button onclick="closeModal()" class="w-full bg-[#4e5058] py-2 rounded text-white font-bold">Fechar</button>
-                `;
+                b.innerHTML = `<h2 class="text-xl font-bold text-white mb-4">Conta</h2>
+                <button onclick="signOut(auth).then(()=>location.reload())" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold">Sair (Logout)</button>`;
             }
         };
-
         window.closeModal = () => document.getElementById('modal-container').classList.add('hidden');
-
         window.confirmCreateServer = async () => {
             const name = document.getElementById('new-server-name').value;
             if(!name) return;
             const sRef = push(ref(db, 'servers'));
-            const serverId = sRef.key;
             await set(sRef, { name, owner: user.uid });
-            await set(ref(db, `users/${user.uid}/servers/${serverId}`), true);
-            // Categoria inicial
-            const catRef = push(ref(db, `servers/${serverId}/categories`));
+            await set(ref(db, `users/${user.uid}/servers/${sRef.key}`), true);
+            const catRef = push(ref(db, `servers/${sRef.key}/categories`));
             await set(catRef, { name: 'Geral' });
-            await push(ref(db, `servers/${serverId}/categories/${catRef.key}/channels`), { name: 'geral' });
+            await push(ref(db, `servers/${sRef.key}/categories/${catRef.key}/channels`), { name: 'geral', type: 'text' });
             closeModal();
         };
-
-        window.openServerSettings = async () => {
-            const sSnap = await get(ref(db, `servers/${activeServer}`));
-            const data = sSnap.val();
-            const isAdmin = data.owner === user.uid;
-
-            document.getElementById('modal-container').classList.remove('hidden');
-            document.getElementById('modal-body').innerHTML = `
-                <h2 class="text-xl font-bold text-white mb-4">Configurações de ${data.name}</h2>
-                <p class="text-xs text-[#949ba4] mb-4 text-center">ID do Grupo: ${activeServer}</p>
-                ${isAdmin ? `
-                    <button onclick="deleteServer()" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold mb-2">EXCLUIR GRUPO</button>
-                ` : `<button onclick="leaveServer()" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold mb-2">SAIR DO GRUPO</button>`}
-            `;
-        };
-
-        window.deleteServer = async () => {
-            if(!confirm("TEM CERTEZA? Isso não pode ser desfeito.")) return;
-            await remove(ref(db, `servers/${activeServer}`));
-            await remove(ref(db, `users/${user.uid}/servers/${activeServer}`));
-            location.reload();
-        };
-
-        window.logout = () => signOut(auth).then(() => location.href = 'index.html');
-
-        window.copyInvite = () => {
-            const link = `${location.origin}${location.pathname}?invite=${activeServer}`;
-            navigator.clipboard.writeText(link);
-            alert("Link de convite copiado!");
-        };
-
-        async function joinServer(id) {
-            await set(ref(db, `users/${user.uid}/servers/${id}`), true);
-            window.history.replaceState({}, '', 'home.html');
-            location.reload();
-        }
-
-        // Funções de Canais
-        window.createCategory = async () => {
+        window.createCategory = () => {
             const n = prompt("Nome da Categoria:");
             if(n) push(ref(db, `servers/${activeServer}/categories`), { name: n });
         };
         window.addChannel = (catId) => {
             const n = prompt("Nome do Canal:");
-            if(n) push(ref(db, `servers/${activeServer}/categories/${catId}/channels`), { name: n.toLowerCase() });
+            const t = confirm("OK para Texto, CANCEL para Voz") ? 'text' : 'voice';
+            if(n) push(ref(db, `servers/${activeServer}/categories/${catId}/channels`), { name: n.toLowerCase(), type: t });
         };
-
+        window.copyInvite = () => {
+            navigator.clipboard.writeText(`${location.origin}${location.pathname}?invite=${activeServer}`);
+            alert("Convite Copiado!");
+        };
         window.viewDMs = () => {
-            isDMView = true;
+            isDMView = true; activeServer = null;
             document.getElementById('sidebar-title').textContent = "Mensagens Diretas";
             document.getElementById('server-actions').classList.add('hidden');
-            document.getElementById('sidebar-content').innerHTML = `
-                <button onclick="addFriend()" class="w-full text-left p-2 text-xs font-bold text-[#949ba4] hover:text-white uppercase">Buscar Amigos +</button>
-                <div id="dm-list-flow" class="mt-4 space-y-1"></div>
-            `;
-            loadDMs();
-        };
-
-        function loadDMs() {
+            document.getElementById('sidebar-content').innerHTML = `<button onclick="addFriend()" class="w-full text-left p-2 text-xs font-bold text-[#949ba4] hover:text-white uppercase">Buscar Amigos +</button><div id="dm-flow" class="mt-4"></div>`;
             onValue(ref(db, `users/${user.uid}/conversations`), snap => {
-                const flow = document.getElementById('dm-list-flow');
-                if(!flow) return;
-                flow.innerHTML = '';
+                const f = document.getElementById('dm-flow'); if(!f) return; f.innerHTML = '';
                 snap.forEach(d => {
-                    const div = document.createElement('div');
-                    div.className = "p-2 flex items-center gap-3 cursor-pointer rounded hover:bg-[#35373c]";
+                    const div = document.createElement('div'); div.className = "p-2 flex items-center gap-3 cursor-pointer rounded hover:bg-[#35373c] mb-1";
                     div.innerHTML = `<div class="w-8 h-8 rounded-full bg-gray-500"></div> <span class="text-sm font-medium">${d.val().withName}</span>`;
                     div.onclick = () => { activeChannel = d.key; document.getElementById('chat-header-title').textContent = d.val().withName; loadMessages(); };
-                    flow.appendChild(div);
+                    f.appendChild(div);
                 });
-            });
-        }
-
-        window.addFriend = async () => {
-            const name = prompt("Nome exato do usuário:");
-            if(!name) return;
-            const uSnap = await get(ref(db, 'users'));
-            uSnap.forEach(u => {
-                if(u.val().username === name && u.key !== user.uid) {
-                    const id = [user.uid, u.key].sort().join("_");
-                    set(ref(db, `users/${user.uid}/conversations/${id}`), { withName: name, withId: u.key });
-                    set(ref(db, `users/${u.key}/conversations/${id}`), { withName: document.getElementById('user-name').textContent, withId: user.uid });
-                }
             });
         };
     </script>
