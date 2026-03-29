@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxChatting | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0a0a0a; color: #e4e4e7; }
+        .glass { background: rgba(17, 17, 17, 0.8); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6">
+
+    <div class="w-full max-w-sm glass border border-zinc-800 p-8 rounded-3xl shadow-2xl">
+        
+        <div id="step-login" class="text-center space-y-6">
+            <h1 class="text-3xl font-black text-emerald-500 tracking-tighter">BLOXCHATTING</h1>
+            <p class="text-zinc-500 text-xs uppercase tracking-widest">Acesse sua conta</p>
+            
+            <button onclick="loginGoogle()" class="w-full flex items-center justify-center gap-3 bg-white text-black font-bold p-4 rounded-xl hover:bg-zinc-200 transition-all active:scale-95">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5" alt="Google">
+                Entrar com Google
+            </button>
+        </div>
+
+        <div id="step-setup" class="hidden space-y-5">
+            <div class="text-center">
+                <h2 class="text-xl font-bold text-white">Quase lá!</h2>
+                <p class="text-zinc-500 text-xs">Configure seu acesso ao BloxChatting</p>
+            </div>
+
+            <div class="space-y-3">
+                <input type="text" id="setup-nick" placeholder="Escolha um Nickname" 
+                       class="w-full bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-white outline-none focus:border-emerald-500">
+                
+                <input type="password" id="setup-pass" placeholder="Crie uma senha de acesso" 
+                       class="w-full bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-white outline-none focus:border-emerald-500">
+            </div>
+
+            <button onclick="finalizarPerfil()" id="btn-create"
+                    class="w-full bg-emerald-600 text-white font-bold p-4 rounded-xl hover:bg-emerald-500 transition-all active:scale-95">
+                CREATE & ENTER
+            </button>
+            <p class="text-[10px] text-zinc-600 text-center uppercase">Um ID de 10 caracteres será gerado.</p>
+        </div>
+
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
