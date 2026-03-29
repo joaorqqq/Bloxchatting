@@ -2,135 +2,1311 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BloxChatting | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #313338; color: #dbdee1; overflow: hidden; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #1e1f22; border-radius: 10px; }
-        .server-icon { transition: 0.2s; position: relative; cursor: pointer; }
-        .server-icon:hover, .server-icon.active { border-radius: 12px; background: #5865f2; color: white; }
-        .server-icon.active::before { content: ''; position: absolute; left: -12px; height: 32px; width: 4px; background: white; border-radius: 0 4px 4px 0; }
-        input[type="file"] { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        :root {
+            --bg-primary: #1e1f22;
+            --bg-secondary: #2b2d31;
+            --bg-tertiary: #313338;
+            --bg-quaternary: #383a40;
+            --text-primary: #dbdee1;
+            --text-secondary: #b5bac1;
+            --text-muted: #80848e;
+            --accent-primary: #5865f2;
+            --accent-secondary: #4752c4;
+            --accent-success: #23a55a;
+            --accent-warning: #f0b232;
+            --accent-danger: #f23f43;
+            --border-primary: rgba(0, 0, 0, 0.2);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        body { 
+            background: linear-gradient(135deg, #1a1b1e 0%, #2d2d30 50%, #1e1f22 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100dvh;
+            position: relative;
+        }
+
+        /* Partículas de fundo animadas */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(88, 101, 242, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(35, 165, 90, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(240, 178, 50, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            animation: particles 20s ease-in-out infinite;
+        }
+
+        @keyframes particles {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* ========== ANIMAÇÕES ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.95); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes ripple {
+            0% { box-shadow: 0 0 0 0 rgba(88, 101, 242, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(88, 101, 242, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(88, 101, 242, 0); }
+        }
+
+        @keyframes typing {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ========== CLASSES DE ANIMAÇÃO ========== */
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        .animate-slide-left { animation: slideInLeft 0.3s ease-out; }
+        .animate-slide-right { animation: slideInRight 0.3s ease-out; }
+        .animate-bounce { animation: bounce 2s ease-in-out infinite; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+
+        /* ========== MOBILE ADAPTATIVO ========== */
+        @media (max-width: 768px) {
+            body.is-sidebar nav, body.is-sidebar aside { display: flex !important; }
+            body.is-sidebar main { display: none !important; }
+            body.is-chat nav, body.is-chat aside { display: none !important; }
+            body.is-chat main { display: flex !important; width: 100vw; }
+        }
+
+        /* ========== SCROLLBAR CUSTOMIZADA ========== */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { 
+            background: transparent; 
+            margin: 4px;
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary)); 
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: linear-gradient(180deg, var(--accent-secondary), var(--accent-primary)); 
+        }
+        
+        /* ========== ÍCONES DE SERVIDOR ========== */
+        .server-icon { 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .server-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.3), rgba(71, 82, 196, 0.3));
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        
+        .server-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateY(-50%);
+            transition: left 0.5s;
+        }
+        
+        .server-icon:hover::before { opacity: 1; }
+        .server-icon:hover::after { left: 100%; }
+        
+        .server-icon.active, .server-icon:hover { 
+            border-radius: 16px; 
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .server-icon.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .server-icon.active::before {
+            animation: ripple 2s infinite;
+        }
+
+        /* ========== BADGES E NOTIFICAÇÕES ========== */
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: linear-gradient(135deg, #f23f43, #d13438);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(242, 63, 67, 0.5);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .mention-badge {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        /* ========== STATUS ONLINE ========== */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            border: 3px solid var(--bg-secondary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-online { 
+            background: linear-gradient(135deg, #23a55a, #1e8e4f);
+            animation: ripple 2s infinite;
+        }
+        .status-idle { 
+            background: linear-gradient(135deg, #f0b232, #d9a02a);
+        }
+        .status-dnd { 
+            background: linear-gradient(135deg, #f23f43, #d13438);
+        }
+        .status-offline { 
+            background: linear-gradient(135deg, #80848e, #6d7179);
+        }
+
+        /* ========== MENSAGENS ========== */
+        .message-container {
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            padding: 8px 12px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .message-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.02);
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: 4px;
+        }
+
+        .message-container:hover::before {
+            opacity: 1;
+        }
+
+        .message-container:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-left-color: var(--accent-primary);
+        }
+
+        .message-container:hover .message-actions {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-actions {
+            position: absolute;
+            top: -8px;
+            right: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 4px;
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .message-action-btn {
+            padding: 6px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .message-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* ========== REAÇÕES ========== */
+        .reaction-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .reaction-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reaction-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+            border-color: var(--accent-primary);
+        }
+
+        .reaction-btn.active {
+            background: rgba(88, 101, 242, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        .reaction-count {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* ========== DIGITANDO ========== */
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* ========== INPUT DE CHAT ========== */
+        .chat-input-wrapper {
+            background: var(--bg-quaternary);
+            border-radius: 12px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-input-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(88, 101, 242, 0.1), 
+                transparent
+            );
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .chat-input-wrapper:focus-within {
+            box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.4), var(--shadow-lg);
+        }
+
+        .chat-input-wrapper:focus-within::before {
+            transform: translateX(100%);
+        }
+
+        #chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        #chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* ========== CANAIS ========== */
+        .channel-item {
+            position: relative;
+            padding: 8px 12px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .channel-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-primary);
+            transform: scaleY(0);
+            transition: transform 0.2s;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .channel-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .channel-item:hover::before,
+        .channel-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .channel-item.active {
+            background: rgba(88, 101, 242, 0.15);
+            color: white;
+        }
+
+        .channel-item.unread {
+            color: white;
+            font-weight: 600;
+        }
+
+        .channel-item.unread::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            right: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        /* ========== MODAIS ========== */
+        .modal-backdrop {
+            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.85);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            animation: fadeIn 0.3s ease-out, slideInRight 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* ========== BOTÕES ========== */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f23f43, #d13438);
+            color: white;
+            box-shadow: 0 4px 12px rgba(242, 63, 67, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(242, 63, 67, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #23a55a, #1e8e4f);
+            color: white;
+            box-shadow: 0 4px 12px rgba(35, 165, 90, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(35, 165, 90, 0.4);
+        }
+
+        /* ========== TOOLTIPS ========== */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-4px);
+            background: #18191c;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s;
+            z-index: 1000;
+            box-shadow: var(--shadow-xl);
+        }
+
+        [data-tooltip]::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #18191c;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+
+        [data-tooltip]:hover::after,
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== AVATARES ========== */
+        .avatar {
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .avatar-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .avatar-ring {
+            box-shadow: 0 0 0 3px var(--bg-secondary), 0 0 0 6px var(--accent-primary);
+        }
+
+        /* ========== SKELETON LOADING ========== */
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                var(--bg-secondary) 25%,
+                var(--bg-tertiary) 50%,
+                var(--bg-secondary) 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        /* ========== DROPDOWN MENU ========== */
+        .dropdown-menu {
+            position: absolute;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: var(--shadow-xl);
+            min-width: 200px;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .dropdown-item {
+            padding: 10px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(88, 101, 242, 0.2);
+            color: white;
+        }
+
+        .dropdown-item.danger:hover {
+            background: rgba(242, 63, 67, 0.2);
+            color: #f23f43;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 4px 0;
+        }
+
+        /* ========== CATEGORIAS ========== */
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            color: var(--text-primary);
+        }
+
+        .category-header.collapsed .category-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .category-arrow {
+            transition: transform 0.2s;
+        }
+
+        .category-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .category-content.collapsed {
+            max-height: 0;
+        }
+
+        /* ========== FORMS ========== */
+        .form-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ========== VOICE CHANNEL ========== */
+        .voice-panel {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-primary);
+            padding: 12px;
+        }
+
+        .voice-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .voice-user:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .voice-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-success);
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        .voice-indicator::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* ========== MEMBERS LIST ========== */
+        .members-list {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-primary);
+            overflow-y: auto;
+        }
+
+        .member-role {
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .member-item {
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 6px;
+            margin: 2px 8px;
+        }
+
+        .member-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* ========== SEARCH BAR ========== */
+        .search-bar {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .search-bar:focus-within {
+            box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.4);
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        /* ========== EMOJI PICKER ========== */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: var(--shadow-xl);
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .emoji-category {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .emoji-item {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .emoji-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.2);
+        }
+
+        /* ========== MENTIONS ========== */
+        .mention {
+            background: rgba(88, 101, 242, 0.3);
+            color: var(--accent-primary);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mention:hover {
+            background: rgba(88, 101, 242, 0.5);
+            color: white;
+        }
+
+        /* ========== LINK PREVIEW ========== */
+        .link-preview {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .link-preview-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .link-preview-title {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .link-preview-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ========== CODE BLOCKS ========== */
+        .code-block {
+            background: #2f3136;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .inline-code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        /* ========== UPLOAD PROGRESS ========== */
+        .upload-progress {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.3s;
+            border-radius: 2px;
+        }
+
+        /* ========== ATTACHMENT ========== */
+        .attachment {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .attachment:hover {
+            background: var(--bg-quaternary);
+            border-color: var(--accent-primary);
+        }
+
+        .attachment-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        /* ========== CONTEXT MENU ========== */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: var(--shadow-xl);
+            min-width: 200px;
+            z-index: 10000;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        /* ========== RESPONSIVE UTILITIES ========== */
+        @media (max-width: 640px) {
+            .members-list { display: none; }
+            .chat-input-wrapper { font-size: 16px; } /* Previne zoom no iOS */
+        }
     </style>
 </head>
-<body class="h-[100dvh] flex">
-
-    <nav class="w-[72px] bg-[#1e1f22] flex flex-col items-center py-3 gap-2 overflow-y-auto shrink-0 shadow-xl">
-        <button onclick="viewDMs()" id="home-btn" class="server-icon active w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-white">
-            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+<body class="flex is-sidebar">
+    <!-- ========== SIDEBAR DE SERVIDORES ========== -->
+    <nav class="w-[72px] bg-gradient-to-b from-[#1e1f22] to-[#18191c] flex flex-col items-center py-3 gap-2 shrink-0 h-full border-r border-black/30 shadow-2xl relative z-10">
+        <!-- Home Button -->
+        <button onclick="viewDMs()" data-tooltip="Home" class="server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-white shadow-lg relative group">
+            <svg class="w-6 h-6 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+            </svg>
         </button>
-        <div class="w-8 h-[2px] bg-[#313338] rounded-full"></div>
-        <div id="servers-list" class="flex flex-col gap-2"></div>
-        <button onclick="openModal('modal-create-server')" class="server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-[#23a55a] text-2xl">+</button>
+        
+        <!-- Separator -->
+        <div class="w-8 h-[2px] bg-gradient-to-r from-transparent via-[#5865f2] to-transparent rounded-full my-1"></div>
+        
+        <!-- Servers List -->
+        <div id="servers-list" class="flex flex-col gap-2 overflow-y-auto flex-1 w-full px-2 scrollbar-thin"></div>
+        
+        <!-- Separator -->
+        <div class="w-8 h-[2px] bg-gradient-to-r from-transparent via-[#23a55a] to-transparent rounded-full my-1"></div>
+        
+        <!-- Add Server Button -->
+        <button onclick="openModal('create-server')" data-tooltip="Adicionar Servidor" class="server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-[#23a55a] text-3xl font-light shadow-lg hover:text-white relative group">
+            <span class="transition-transform group-hover:rotate-90 duration-300">+</span>
+        </button>
+        
+        <!-- Discover Button -->
+        <button onclick="openModal('discover')" data-tooltip="Explorar Servidores" class="server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center text-[#5865f2] shadow-lg group">
+            <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm1.61-9.96c-2.06-.3-3.88.97-4.43 2.79-.18.58.26 1.17.87 1.17h.2c.41 0 .74-.29.88-.67.32-.89 1.27-1.5 2.3-1.28.95.2 1.65 1.13 1.57 2.1-.1 1.34-1.62 1.63-2.45 2.88 0 .01-.01.01-.01.02-.01.02-.02.03-.03.05-.09.15-.18.32-.25.5-.01.03-.03.05-.04.08-.01.02-.01.04-.02.07-.12.34-.2.75-.2 1.25h2c0-.42.11-.77.28-1.07.02-.03.03-.06.05-.09.08-.14.18-.27.28-.39.01-.01.02-.03.03-.04.1-.12.21-.23.33-.34.96-.91 2.26-1.65 1.99-3.56-.24-1.74-1.61-3.21-3.35-3.47z"/>
+            </svg>
+        </button>
     </nav>
 
-    <aside class="w-60 bg-[#2b2d31] flex flex-col shrink-0">
-        <header id="sidebar-header" class="h-12 px-4 flex items-center justify-between shadow-sm border-b border-[#1f2124] font-bold text-white cursor-pointer hover:bg-[#35373c]">
-            <span class="truncate" id="sidebar-title">Mensagens Diretas</span>
+    <!-- ========== SIDEBAR DE CANAIS ========== -->
+    <aside class="w-60 bg-[#2b2d31] flex flex-col shrink-0 h-full shadow-2xl relative z-9">
+        <!-- Header -->
+        <header class="h-12 px-4 flex items-center justify-between shadow-lg border-b border-[#1f2124] bg-gradient-to-r from-[#2b2d31] to-[#26272b] cursor-pointer hover:bg-[#35373c] transition-colors group" onclick="toggleServerMenu()">
+            <span id="sidebar-title" class="font-bold text-white uppercase text-[12px] tracking-wide truncate flex-1">BloxChatting</span>
+            <svg class="w-4 h-4 text-[#949ba4] group-hover:text-white transition-all group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
         </header>
 
-        <div class="flex-1 overflow-y-auto py-2 px-2" id="sidebar-content"></div>
-
-        <div id="voice-status" class="hidden bg-[#232428] p-3 border-t border-[#1e1f22]">
-            <div class="flex items-center gap-2 text-green-500 font-bold text-[10px] mb-2 uppercase">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Em Call
+        <!-- Search Bar -->
+        <div class="p-2">
+            <div class="search-bar">
+                <svg class="w-4 h-4 text-[#949ba4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" class="search-input" placeholder="Buscar ou iniciar DM" id="search-input">
             </div>
-            <button onclick="leaveVoice()" class="w-full bg-[#da373c] text-white text-[10px] py-1.5 rounded font-bold">Sair da Call</button>
         </div>
 
-        <footer class="h-[52px] bg-[#232428] px-2 flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-indigo-500 shrink-0" id="user-pfp"></div>
+        <!-- Content -->
+        <div id="sidebar-content" class="flex-1 overflow-y-auto p-2">
+            <!-- Conteúdo será carregado dinamicamente -->
+        </div>
+
+        <!-- Footer (User Info) -->
+        <footer class="h-[52px] bg-gradient-to-r from-[#232428] to-[#1e1f22] px-2 flex items-center gap-2 border-t border-black/20 group">
+            <div class="relative">
+                <div class="avatar w-8 h-8 avatar-gradient flex items-center justify-center text-white font-bold text-sm transition-transform group-hover:scale-110" id="user-pfp">
+                    U
+                </div>
+                <div class="status-indicator status-online"></div>
+            </div>
             <div class="flex-1 min-w-0">
                 <div class="text-xs font-bold text-white truncate" id="user-name">Carregando...</div>
-                <div class="text-[10px] text-[#949ba4]" id="user-id-tag">#0000</div>
+                <div class="text-[10px] text-[#949ba4]" id="user-status">Online</div>
             </div>
-            <button onclick="openModal('modal-account-settings')" class="p-1.5 hover:bg-[#3f4147] rounded text-[#949ba4] hover:text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <button onclick="toggleUserMenu()" data-tooltip="Configurações" class="p-1.5 text-[#949ba4] hover:text-white transition-all hover:rotate-90">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <button onclick="confirmLogout()" data-tooltip="Sair" class="p-1.5 text-[#949ba4] hover:text-[#f23f43] transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
             </button>
         </footer>
     </aside>
 
-    <main class="flex-1 flex flex-col bg-[#313338] min-w-0">
-        <header class="h-12 px-4 flex items-center justify-between border-b border-[#26272b] shadow-sm shrink-0">
-            <div class="flex items-center gap-2 overflow-hidden">
-                <span class="text-[#80848e] text-2xl font-light" id="chat-type-icon">#</span>
-                <span class="font-bold text-white truncate" id="chat-header-title">Selecione um chat</span>
-            </div>
-            <div id="server-actions" class="hidden flex gap-2">
-                <button onclick="copyInvite()" class="text-[10px] bg-[#5865f2] px-2 py-1 rounded text-white font-bold">CONVIDAR</button>
+    <!-- ========== CHAT PRINCIPAL ========== -->
+    <main class="flex-1 flex flex-col bg-gradient-to-br from-[#313338] to-[#2b2d31] relative h-full">
+        <!-- Header -->
+        <header class="h-12 px-4 flex items-center gap-3 border-b border-[#26272b]/50 shadow-lg shrink-0 bg-[#313338]/80 backdrop-blur-sm relative z-8">
+            <!-- Back Button (Mobile) -->
+            <button onclick="backToSidebar()" class="md:hidden text-[#b5bac1] hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            
+            <!-- Channel Icon & Name -->
+            <span class="text-[#80848e] text-xl" id="chat-type-icon">#</span>
+            <span class="font-bold text-white truncate text-sm flex-1" id="chat-header-title">Selecione uma conversa</span>
+            
+            <!-- Header Actions -->
+            <div class="flex items-center gap-1">
+                <button data-tooltip="Chamada de Voz" class="p-2 text-[#b5bac1] hover:text-white transition-all hover:scale-110 rounded hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
+                    </svg>
+                </button>
+                
+                <button data-tooltip="Chamada de Vídeo" class="p-2 text-[#b5bac1] hover:text-white transition-all hover:scale-110 rounded hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                    </svg>
+                </button>
+                
+                <button data-tooltip="Fixados" class="p-2 text-[#b5bac1] hover:text-white transition-all hover:scale-110 rounded hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/>
+                    </svg>
+                </button>
+                
+                <button data-tooltip="Buscar" class="p-2 text-[#b5bac1] hover:text-white transition-all hover:scale-110 rounded hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+                
+                <button onclick="toggleMembersPanel()" data-tooltip="Membros" class="p-2 text-[#b5bac1] hover:text-white transition-all hover:scale-110 rounded hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </button>
             </div>
         </header>
 
-        <div id="messages-flow" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+        <!-- Messages Flow -->
+        <div id="messages-flow" class="flex-1 overflow-y-auto p-4 space-y-1 pb-24">
+            <!-- Mensagens serão carregadas aqui -->
+        </div>
 
-        <div class="px-4 pb-6">
-            <div class="bg-[#383a40] rounded-lg px-4 flex items-center gap-3">
-                <label class="cursor-pointer text-[#b5bac1] hover:text-white text-2xl font-light">
-                    +
-                    <input type="file" id="file-input" onchange="handleFileUpload(event)">
+        <!-- Typing Indicator -->
+        <div id="typing-container" class="px-4 pb-2 hidden">
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <span class="text-xs text-[#949ba4] ml-2">
+                    <span id="typing-users"></span> está digitando...
+                </span>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#313338] via-[#313338] to-transparent pointer-events-none">
+            <div class="chat-input-wrapper pointer-events-auto">
+                <label class="text-[#b5bac1] hover:text-white transition-colors cursor-pointer" data-tooltip="Anexar arquivo">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <input type="file" id="file-input" class="hidden" onchange="handleFileUpload(event)" multiple>
                 </label>
-                <input type="text" id="chat-input" placeholder="Conversar..." class="w-full bg-transparent outline-none text-[#dbdee1] py-3">
-                <button id="mic-btn" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()" class="text-[#b5bac1] hover:text-red-500 transition text-xl px-2">
+                
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    placeholder="Conversar em #geral..." 
+                    autocomplete="off"
+                >
+                
+                <button onclick="toggleEmojiPicker()" data-tooltip="Emojis" class="text-xl hover:scale-110 transition-transform">
+                    😊
+                </button>
+                
+                <button data-tooltip="GIF" class="text-[#b5bac1] hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                    </svg>
+                </button>
+                
+                <button 
+                    id="mic-btn" 
+                    data-tooltip="Gravar áudio"
+                    onmousedown="startRecording()" 
+                    onmouseup="stopRecording()" 
+                    ontouchstart="startRecording()" 
+                    ontouchend="stopRecording()" 
+                    class="text-xl hover:scale-110 transition-transform"
+                >
                     🎤
                 </button>
             </div>
         </div>
     </main>
 
-    <div id="modal-container" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-        <div id="modal-content" class="bg-[#313338] w-full max-w-md rounded-lg p-6 relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-[#949ba4]">✕</button>
+    <!-- ========== MEMBERS PANEL (Hidden by default) ========== -->
+    <div id="members-panel" class="members-list hidden">
+        <div class="p-4">
+            <div class="member-role">Online — 3</div>
+            <div class="member-item">
+                <div class="relative">
+                    <div class="avatar w-8 h-8 bg-gradient-to-br from-[#5865f2] to-[#4752c4] rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        U
+                    </div>
+                    <div class="status-indicator status-online"></div>
+                </div>
+                <span class="text-sm font-medium">Usuário</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL ========== -->
+    <div id="modal-container" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="modal-content bg-gradient-to-br from-[#313338] to-[#2b2d31] w-full max-w-md rounded-xl p-6 relative shadow-2xl border border-white/10 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-[#949ba4] hover:text-white transition-all hover:rotate-90">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
             <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ========== EMOJI PICKER ========== -->
+    <div id="emoji-picker" class="emoji-picker hidden">
+        <h3 class="text-sm font-bold text-white mb-3">Emojis</h3>
+        <div class="emoji-category">
+            <div class="emoji-item" onclick="insertEmoji('😀')">😀</div>
+            <div class="emoji-item" onclick="insertEmoji('😃')">😃</div>
+            <div class="emoji-item" onclick="insertEmoji('😄')">😄</div>
+            <div class="emoji-item" onclick="insertEmoji('😁')">😁</div>
+            <div class="emoji-item" onclick="insertEmoji('😅')">😅</div>
+            <div class="emoji-item" onclick="insertEmoji('😂')">😂</div>
+            <div class="emoji-item" onclick="insertEmoji('🤣')">🤣</div>
+            <div class="emoji-item" onclick="insertEmoji('😊')">😊</div>
+            <div class="emoji-item" onclick="insertEmoji('😇')">😇</div>
+            <div class="emoji-item" onclick="insertEmoji('🙂')">🙂</div>
+            <div class="emoji-item" onclick="insertEmoji('🙃')">🙃</div>
+            <div class="emoji-item" onclick="insertEmoji('😉')">😉</div>
+            <div class="emoji-item" onclick="insertEmoji('😌')">😌</div>
+            <div class="emoji-item" onclick="insertEmoji('😍')">😍</div>
+            <div class="emoji-item" onclick="insertEmoji('🥰')">🥰</div>
+            <div class="emoji-item" onclick="insertEmoji('😘')">😘</div>
+            <div class="emoji-item" onclick="insertEmoji('❤️')">❤️</div>
+            <div class="emoji-item" onclick="insertEmoji('💕')">💕</div>
+            <div class="emoji-item" onclick="insertEmoji('💖')">💖</div>
+            <div class="emoji-item" onclick="insertEmoji('✨')">✨</div>
+            <div class="emoji-item" onclick="insertEmoji('⭐')">⭐</div>
+            <div class="emoji-item" onclick="insertEmoji('🌟')">🌟</div>
+            <div class="emoji-item" onclick="insertEmoji('🔥')">🔥</div>
+            <div class="emoji-item" onclick="insertEmoji('👍')">👍</div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-        // 1. CONFIGS
-        const firebaseConfig = {
-            apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c",
-            authDomain: "bloxchatting.firebaseapp.com",
-            databaseURL: "https://bloxchatting-default-rtdb.firebaseio.com",
-            projectId: "bloxchatting",
-            storageBucket: "bloxchatting.firebasestorage.app",
-            messagingSenderId: "600333968159",
-            appId: "1:600333968159:web:7a57e0e8ae2eed30a6062a"
+        // ========== CONFIGURAÇÕES ==========
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCx1ydeZ1HvunA2iedzJqLZDDwUOnXUL1c", 
+            authDomain: "bloxchatting.firebaseapp.com", 
+            databaseURL: "https://bloxchatting-default-rtdb.firebaseio.com", 
+            projectId: "bloxchatting", 
+            storageBucket: "bloxchatting.firebasestorage.app", 
+            messagingSenderId: "600333968159", 
+            appId: "1:600333968159:web:7a57e0e8ae2eed30a6062a" 
         };
+        
         const supabaseUrl = 'https://venesewmqcecxbnlxwlr.supabase.co';
-        const supabaseKey = '8070833db02b205a5c54e5ca75817c4e';
-        const agoraAppId = 'e7f6e9aeecf14b2ba10e3f40be9f56e7';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmVzZXdtcWNlY3hibmx4d2xyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MjkzMTQsImV4cCI6MjA1MzUwNTMxNH0.8WXJH5C5cPsGd7wgTd_vB5c0gJ0XQIbHp-8Xz51lXa8';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        // ========== VARIÁVEIS GLOBAIS ==========
         let user = null;
         let activeServer = null;
         let activeChannel = null;
         let isDMView = true;
+        let typingTimeout = null;
 
-        const safe = (str) => {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
+        // ========== MOBILE ADAPTADOR ==========
+        window.openChatView = () => {
+            document.body.classList.remove('is-sidebar');
+            document.body.classList.add('is-chat');
         };
 
-        // 2. AUTH
+        window.backToSidebar = () => {
+            document.body.classList.remove('is-chat');
+            document.body.classList.add('is-sidebar');
+        };
+
+        // ========== AUTENTICAÇÃO ==========
         onAuthStateChanged(auth, u => {
             if (!u) return window.location.href = 'index.html';
             user = u;
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('invite')) joinServer(urlParams.get('invite'));
             loadUserProfile();
             loadServers();
             viewDMs();
@@ -138,26 +1314,48 @@
 
         async function loadUserProfile() {
             onValue(ref(db, `users/${user.uid}`), snap => {
-                const data = snap.val();
-                if(data) {
-                    document.getElementById('user-name').textContent = data.username;
-                    document.getElementById('user-id-tag').textContent = `#${data.tag}`;
+                const d = snap.val();
+                if(d) {
+                    document.getElementById('user-name').textContent = d.username || 'Usuário';
+                    document.getElementById('user-pfp').textContent = (d.username || 'U')[0].toUpperCase();
+                    
+                    // Atualizar status online
+                    set(ref(db, `users/${user.uid}/status`), {
+                        online: true,
+                        lastSeen: Date.now()
+                    });
                 }
+            });
+
+            // Detectar quando o usuário sai
+            window.addEventListener('beforeunload', () => {
+                set(ref(db, `users/${user.uid}/status/online`), false);
             });
         }
 
-        // 3. SERVIDORES & CANAIS
+        // ========== SERVIDORES ==========
         function loadServers() {
             onValue(ref(db, `users/${user.uid}/servers`), snap => {
                 const list = document.getElementById('servers-list');
                 list.innerHTML = '';
+                
+                if (!snap.exists()) {
+                    list.innerHTML = '<div class="text-center text-[#6d6f78] text-xs p-4">Nenhum servidor</div>';
+                    return;
+                }
+                
                 snap.forEach(s => {
-                    get(ref(db, `servers/${s.key}`)).then(svSnap => {
-                        const data = svSnap.val();
+                    get(ref(db, `servers/${s.key}`)).then(sv => {
+                        const data = sv.val(); 
                         if(!data) return;
-                        const btn = document.createElement('button');
-                        btn.className = "server-icon w-12 h-12 bg-[#313338] rounded-3xl flex items-center justify-center overflow-hidden mb-1";
-                        btn.innerHTML = `<img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random">`;
+                        
+                        const btn = document.createElement('div');
+                        btn.className = "server-icon w-12 h-12 bg-gradient-to-br from-[#5865f2] to-[#4752c4] rounded-3xl flex items-center justify-center overflow-hidden shadow-lg relative";
+                        btn.setAttribute('data-tooltip', data.name);
+                        btn.innerHTML = `
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random&color=fff&bold=true&size=48" class="w-full h-full object-cover">
+                            ${data.unread ? '<span class="notification-badge">5</span>' : ''}
+                        `;
                         btn.onclick = () => selectServer(s.key, data.name);
                         list.appendChild(btn);
                     });
@@ -166,227 +1364,499 @@
         }
 
         window.selectServer = (id, name) => {
-            isDMView = false;
-            activeServer = id;
+            isDMView = false; 
+            activeServer = id; 
             activeChannel = null;
             document.getElementById('sidebar-title').textContent = name;
-            document.getElementById('server-actions').classList.remove('hidden');
-            renderServerChannels();
+            document.getElementById('chat-type-icon').textContent = '#';
+            renderChannels();
         };
 
-        function renderServerChannels() {
-            const container = document.getElementById('sidebar-content');
+        function renderChannels() {
+            const cont = document.getElementById('sidebar-content');
             onValue(ref(db, `servers/${activeServer}/categories`), snap => {
-                container.innerHTML = `<button onclick="openServerSettings()" class="w-full text-left p-2 text-[10px] font-bold text-[#949ba4] hover:text-white uppercase mb-2">⚙ Configs do Grupo</button>`;
+                cont.innerHTML = '';
+                
+                if (!snap.exists()) {
+                    cont.innerHTML = '<div class="text-center text-[#6d6f78] text-sm p-4">Nenhum canal disponível</div>';
+                    return;
+                }
+                
                 snap.forEach(cat => {
-                    const data = cat.val();
-                    const catDiv = document.createElement('div');
-                    catDiv.innerHTML = `
-                        <div class="flex justify-between items-center px-1 mt-4 mb-1">
-                            <span class="text-[11px] font-bold text-[#949ba4] uppercase">${safe(data.name)}</span>
-                            <button onclick="addChannel('${cat.key}')" class="text-[#949ba4] hover:text-white">+</button>
-                        </div>
-                        <div id="cat-${cat.key}" class="space-y-0.5"></div>
-                    `;
-                    container.appendChild(catDiv);
+                    const d = cat.val();
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'mb-2';
                     
-                    if(data.channels) {
-                        Object.keys(data.channels).forEach(chId => {
-                            const ch = data.channels[chId];
-                            const btn = document.createElement('div');
-                            btn.className = "p-2 flex items-center gap-2 cursor-pointer rounded hover:bg-[#35373c] text-[#80848e] hover:text-white text-sm";
-                            btn.innerHTML = `<span>${ch.type === 'voice' ? '🔊' : '#'}</span> <span class="truncate">${safe(ch.name)}</span>`;
-                            btn.onclick = () => {
-                                if(ch.type === 'voice') joinVoice(chId, ch.name);
-                                else { activeChannel = chId; loadMessages(); }
+                    const header = document.createElement('div');
+                    header.className = "category-header text-[11px] font-bold text-[#949ba4] uppercase";
+                    header.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="w-3 h-3 category-arrow" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>${d.name}</span>
+                        </div>
+                        <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                        </svg>
+                    `;
+                    
+                    const content = document.createElement('div');
+                    content.className = 'category-content';
+                    
+                    header.onclick = () => {
+                        header.classList.toggle('collapsed');
+                        content.classList.toggle('collapsed');
+                    };
+                    
+                    if(d.channels) {
+                        Object.keys(d.channels).forEach(cid => {
+                            const ch = d.channels[cid];
+                            const channelBtn = document.createElement('div');
+                            channelBtn.className = `channel-item ${ch.unread ? 'unread' : ''}`;
+                            channelBtn.innerHTML = `
+                                <svg class="w-5 h-5 text-[#80848e]" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M5.88 4.12L13.76 12l-7.88 7.88L8 22l10-10L8 2z"/>
+                                </svg>
+                                <span class="truncate flex-1">${ch.name}</span>
+                                ${ch.unread ? '<span class="notification-badge">3</span>' : ''}
+                            `;
+                            channelBtn.onclick = () => { 
+                                activeChannel = cid; 
+                                document.getElementById('chat-header-title').textContent = ch.name;
+                                document.getElementById('chat-type-icon').textContent = '#';
+                                updatePlaceholder(ch.name);
+                                loadMessages(); 
+                                openChatView();
+                                
+                                document.querySelectorAll('.channel-item').forEach(c => c.classList.remove('active'));
+                                channelBtn.classList.add('active');
                             };
-                            document.getElementById(`cat-${cat.key}`).appendChild(btn);
+                            content.appendChild(channelBtn);
                         });
                     }
+                    
+                    categoryDiv.appendChild(header);
+                    categoryDiv.appendChild(content);
+                    cont.appendChild(categoryDiv);
                 });
-                container.innerHTML += `<button onclick="createCategory()" class="w-full text-left p-2 text-xs text-[#949ba4] hover:text-white italic mt-4">+ Nova Categoria</button>`;
             });
         }
 
-        // 4. MENSAGENS E RENDERS
+        // ========== MENSAGENS ==========
         function loadMessages() {
-            if(!activeChannel) return;
             const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
             onValue(ref(db, path), snap => {
                 const flow = document.getElementById('messages-flow');
                 flow.innerHTML = '';
-                snap.forEach(m => {
-                    const data = m.val();
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = "flex gap-4 group";
-                    let content = `<p class="text-sm text-[#dbdee1]">${safe(data.text)}</p>`;
-                    
-                    if(data.type === "image") content = `<img src="${data.text}" class="max-w-[250px] rounded-lg mt-2 border border-[#1e1f22] cursor-pointer" onclick="window.open('${data.text}')">`;
-                    if(data.type === "audio") content = `<audio src="${data.text}" controls class="h-8 mt-2 w-full max-w-[240px]"></audio>`;
-                    
-                    msgDiv.innerHTML = `
-                        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shrink-0">${data.user[0]}</div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-white text-sm">${safe(data.user)}</span>
-                                <span class="text-[10px] text-[#949ba4]">${new Date(data.time).toLocaleTimeString()}</span>
+                
+                if (!snap.exists()) {
+                    flow.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-[#5865f2] to-[#4752c4] flex items-center justify-center mb-4 animate-float">
+                                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
                             </div>
-                            ${content}
+                            <h3 class="text-lg font-bold text-white mb-2">Início da conversa</h3>
+                            <p class="text-sm text-[#949ba4] max-w-md">
+                                Este é o início da sua conversa. Envie uma mensagem para começar!
+                            </p>
                         </div>
                     `;
-                    flow.appendChild(msgDiv);
+                    return;
+                }
+                
+                let lastDate = null;
+                snap.forEach(m => {
+                    const d = m.val();
+                    const msgDate = new Date(d.time).toLocaleDateString('pt-BR');
+                    
+                    // Separador de data
+                    if (msgDate !== lastDate) {
+                        const dateSeparator = document.createElement('div');
+                        dateSeparator.className = 'flex items-center gap-4 my-4';
+                        dateSeparator.innerHTML = `
+                            <div class="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#949ba4] to-transparent"></div>
+                            <span class="text-xs text-[#949ba4] font-semibold">${msgDate}</span>
+                            <div class="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#949ba4] to-transparent"></div>
+                        `;
+                        flow.appendChild(dateSeparator);
+                        lastDate = msgDate;
+                    }
+                    
+                    const msg = document.createElement('div');
+                    msg.className = "message-container animate-fade-in";
+                    
+                    const initial = d.user ? d.user[0].toUpperCase() : 'U';
+                    const colors = ['#5865f2', '#57f287', '#fee75c', '#eb459e', '#ed4245', '#3ba55d'];
+                    const color = colors[d.user ? d.user.charCodeAt(0) % colors.length : 0];
+                    
+                    msg.innerHTML = `
+                        <div class="flex gap-3 relative group">
+                            <div class="avatar w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0" style="background: linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})">
+                                ${initial}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="font-bold text-white text-sm hover:underline cursor-pointer">${escapeHtml(d.user || 'Anônimo')}</span>
+                                    <span class="text-[10px] text-[#949ba4]">${new Date(d.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                                <p class="text-sm text-[#dbdee1] break-words leading-relaxed">${formatMessage(escapeHtml(d.text))}</p>
+                                ${d.reactions ? renderReactions(d.reactions) : ''}
+                            </div>
+                            <div class="message-actions">
+                                <button class="message-action-btn" onclick="addReaction('${m.key}', '👍')" title="Reagir">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
+                                    </svg>
+                                </button>
+                                <button class="message-action-btn" title="Responder">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <button class="message-action-btn" title="Mais opções">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    flow.appendChild(msg);
                 });
+                
                 flow.scrollTop = flow.scrollHeight;
             });
         }
 
-        // 5. VOZ (Agora.io)
-        let rtc = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        let mic;
-        window.joinVoice = async (id, name) => {
-            try {
-                await rtc.join(agoraAppId, id, null);
-                mic = await AgoraRTC.createMicrophoneAudioTrack();
-                await rtc.publish([mic]);
-                document.getElementById('voice-status').classList.remove('hidden');
-                rtc.on("user-published", async (u, type) => {
-                    await rtc.subscribe(u, type);
-                    if (type === "audio") u.audioTrack.play();
-                });
-            } catch (e) { alert("Erro ao entrar na call."); }
-        };
-        window.leaveVoice = async () => {
-            if(mic) { mic.stop(); mic.close(); }
-            await rtc.leave();
-            location.reload();
-        };
-
-        // 6. UPLOADS (Supabase)
-        window.handleFileUpload = async (e) => {
-            const file = e.target.files[0];
-            if (!file || !activeChannel) return;
-            const input = document.getElementById('chat-input');
-            input.placeholder = "Enviando...";
-
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = ev => {
-                    const img = new Image();
-                    img.src = ev.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        if(w > 1080) { h *= 1080/w; w = 1080; }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0,0,w,h);
-                        canvas.toBlob(blob => uploadSupabase(new File([blob], `${Date.now()}.jpg`, {type: 'image/jpeg'}), "image"), 'image/jpeg', 0.7);
-                    };
-                };
-            } else {
-                if(file.size > 5 * 1024 * 1024) return alert("Máximo 5MB");
-                uploadSupabase(file, "file");
-            }
-        };
-
-        async function uploadSupabase(file, type) {
-            const path = `uploads/${Date.now()}_${file.name}`;
-            const { error } = await supabase.storage.from('Bloxchatting').upload(path, file);
-            if (!error) {
-                const { data: { publicUrl } } = supabase.storage.from('Bloxchatting').getPublicUrl(path);
-                sendMessage(publicUrl, type);
-            }
-            document.getElementById('chat-input').placeholder = "Conversar...";
+        // ========== FORMATAÇÃO DE MENSAGENS ==========
+        function formatMessage(text) {
+            // URLs
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-[#00b0f4] hover:underline">$1</a>');
+            
+            // Menções
+            text = text.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+            
+            // Negrito
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            
+            // Itálico
+            text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            
+            // Código inline
+            text = text.replace(/`(.+?)`/g, '<code class="inline-code">$1</code>');
+            
+            return text;
         }
 
-        // 7. INPUT & MENSAGENS ENVIAR
-        document.getElementById('chat-input').onkeypress = e => {
-            if(e.key === 'Enter' && e.target.value.trim() && activeChannel) {
-                sendMessage(e.target.value, "text");
-                e.target.value = '';
+        function renderReactions(reactions) {
+            if (!reactions) return '';
+            
+            let html = '<div class="reaction-container">';
+            for (let [emoji, users] of Object.entries(reactions)) {
+                const count = Array.isArray(users) ? users.length : Object.keys(users).length;
+                const isActive = Array.isArray(users) ? users.includes(user.uid) : users[user.uid];
+                html += `
+                    <button class="reaction-btn ${isActive ? 'active' : ''}" onclick="toggleReaction('${emoji}')">
+                        <span>${emoji}</span>
+                        <span class="reaction-count">${count}</span>
+                    </button>
+                `;
             }
-        };
+            html += '</div>';
+            return html;
+        }
 
-        function sendMessage(val, type) {
-            const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
-            push(ref(db, path), {
-                user: document.getElementById('user-name').textContent,
-                text: val,
-                type: type,
-                time: Date.now()
+        // ========== ESCAPE HTML ==========
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // ========== ADJUST COLOR ==========
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        // ========== UPDATE PLACEHOLDER ==========
+        function updatePlaceholder(channelName = 'canal') {
+            const input = document.getElementById('chat-input');
+            input.placeholder = `Conversar em #${channelName}...`;
+        }
+
+        // ========== ENVIO DE MENSAGENS ==========
+        document.getElementById('chat-input').addEventListener('keypress', e => {
+            if(e.key === 'Enter' && e.target.value.trim() && activeChannel) {
+                const path = isDMView ? `dms/${activeChannel}/messages` : `servers/${activeServer}/messages/${activeChannel}`;
+                const username = document.getElementById('user-name').textContent;
+                
+                push(ref(db, path), { 
+                    user: username, 
+                    text: e.target.value.trim(), 
+                    time: Date.now(),
+                    userId: user.uid
+                });
+                
+                e.target.value = '';
+                hideTypingIndicator();
+            }
+        });
+
+        // Indicador de digitação
+        document.getElementById('chat-input').addEventListener('input', e => {
+            if (e.target.value.trim() && activeChannel) {
+                showTypingIndicator();
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(hideTypingIndicator, 3000);
+            } else {
+                hideTypingIndicator();
+            }
+        });
+
+        function showTypingIndicator() {
+            if (!activeChannel) return;
+            const path = isDMView ? `dms/${activeChannel}/typing` : `servers/${activeServer}/typing/${activeChannel}`;
+            set(ref(db, `${path}/${user.uid}`), {
+                username: document.getElementById('user-name').textContent,
+                timestamp: Date.now()
             });
         }
 
-        // 8. ÁUDIO RECORD
-        let rec; let chunks = [];
-        window.startRecording = async () => {
-            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-            rec = new MediaRecorder(s);
-            chunks = [];
-            rec.ondataavailable = e => chunks.push(e.data);
-            rec.onstop = () => {
-                const blob = new Blob(chunks, { type: 'audio/mp3' });
-                uploadSupabase(new File([blob], `mic_${Date.now()}.mp3`, {type: 'audio/mp3'}), "audio");
-            };
-            rec.start();
-            document.getElementById('mic-btn').classList.add('text-red-500');
-        };
-        window.stopRecording = () => { if(rec) rec.stop(); document.getElementById('mic-btn').classList.remove('text-red-500'); };
+        function hideTypingIndicator() {
+            if (!activeChannel) return;
+            const path = isDMView ? `dms/${activeChannel}/typing` : `servers/${activeServer}/typing/${activeChannel}`;
+            remove(ref(db, `${path}/${user.uid}`));
+        }
 
-        // 9. MODAIS E UTILITÁRIOS
-        window.openModal = type => {
-            const b = document.getElementById('modal-body');
-            document.getElementById('modal-container').classList.remove('hidden');
-            if(type === 'modal-create-server') {
-                b.innerHTML = `<h2 class="text-xl font-bold text-white mb-4">Criar Servidor</h2>
-                <input id="new-server-name" type="text" class="w-full p-2 bg-[#1e1f22] rounded mb-4 text-white" placeholder="Nome do servidor">
-                <button onclick="confirmCreateServer()" class="w-full bg-[#5865f2] py-2 rounded text-white font-bold">Criar</button>`;
+        // ========== DMs ==========
+        window.viewDMs = () => {
+            isDMView = true; 
+            activeServer = null;
+            document.getElementById('sidebar-title').textContent = "Mensagens Diretas";
+            document.getElementById('chat-type-icon').textContent = '@';
+            
+            const cont = document.getElementById('sidebar-content');
+            cont.innerHTML = `
+                <button onclick="addFriend()" class="btn btn-primary w-full mb-3 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                    Adicionar Amigo
+                </button>
+                <div id="dm-list"></div>
+            `;
+            
+            onValue(ref(db, `users/${user.uid}/conversations`), snap => {
+                const list = document.getElementById('dm-list'); 
+                if(!list) return; 
+                list.innerHTML = '';
+                
+                if (!snap.exists()) {
+                    list.innerHTML = `
+                        <div class="text-center text-[#6d6f78] text-sm mt-8 animate-fade-in">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-[#5865f2] opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                            </svg>
+                            <p class="font-semibold mb-1">Nenhuma conversa ainda</p>
+                            <p class="text-xs">Adicione amigos para começar a conversar</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                snap.forEach(d => {
+                    const data = d.val();
+                    const div = document.createElement('div');
+                    div.className = "channel-item animate-slide-left";
+                    
+                    const initial = data.withName ? data.withName[0].toUpperCase() : 'U';
+                    const colors = ['#5865f2', '#57f287', '#fee75c', '#eb459e', '#ed4245'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    div.innerHTML = `
+                        <div class="relative">
+                            <div class="avatar w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg" style="background: linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})">
+                                ${initial}
+                            </div>
+                            <div class="status-indicator ${data.online ? 'status-online' : 'status-offline'}"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm text-white font-medium truncate">${escapeHtml(data.withName || 'Usuário')}</div>
+                            <div class="text-xs text-[#949ba4] truncate">${data.lastMessage || 'Comece uma conversa'}</div>
+                        </div>
+                        ${data.unread ? '<span class="notification-badge">2</span>' : ''}
+                    `;
+                    
+                    div.onclick = () => { 
+                        activeChannel = d.key; 
+                        document.getElementById('chat-header-title').textContent = data.withName;
+                        document.getElementById('chat-type-icon').textContent = '@';
+                        updatePlaceholder(data.withName);
+                        loadMessages(); 
+                        openChatView();
+                        
+                        document.querySelectorAll('.channel-item').forEach(c => c.classList.remove('active'));
+                        div.classList.add('active');
+                    };
+                    
+                    list.appendChild(div);
+                });
+            });
+        };
+
+        // ========== MODALS ==========
+        window.openModal = (type) => { 
+            const modalBody = document.getElementById('modal-body');
+            
+            if (type === 'create-server') {
+                modalBody.innerHTML = `
+                    <h2 class="text-2xl font-bold text-white mb-2">Criar Servidor</h2>
+                    <p class="text-sm text-[#949ba4] mb-6">Dê um nome ao seu novo servidor. Você pode alterá-lo depois.</p>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Nome do Servidor</label>
+                        <input type="text" id="server-name" class="form-input" placeholder="Digite o nome..." maxlength="50">
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="closeModal()" class="btn btn-secondary flex-1">Cancelar</button>
+                        <button onclick="createServer()" class="btn btn-primary flex-1">Criar</button>
+                    </div>
+                `;
+            } else if (type === 'discover') {
+                modalBody.innerHTML = `
+                    <h2 class="text-2xl font-bold text-white mb-2">Explorar Servidores</h2>
+                    <p class="text-sm text-[#949ba4] mb-6">Descubra comunidades incríveis!</p>
+                    
+                    <div class="search-bar mb-4">
+                        <svg class="w-4 h-4 text-[#949ba4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" class="search-input" placeholder="Buscar servidores...">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="p-4 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#5865f2] to-[#4752c4] flex items-center justify-center text-white font-bold">
+                                    G
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-white">Gaming Community</div>
+                                    <div class="text-xs text-[#949ba4]">1.2K membros online</div>
+                                </div>
+                                <button class="btn btn-success text-xs px-4 py-2">Entrar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
-            if(type === 'modal-account-settings') {
-                b.innerHTML = `<h2 class="text-xl font-bold text-white mb-4">Conta</h2>
-                <button onclick="signOut(auth).then(()=>location.reload())" class="w-full bg-[#f23f43] py-2 rounded text-white font-bold">Sair (Logout)</button>`;
+            
+            document.getElementById('modal-container').classList.remove('hidden'); 
+        };
+        
+        window.closeModal = () => { 
+            document.getElementById('modal-container').classList.add('hidden'); 
+        };
+
+        // ========== UTILITÁRIOS ==========
+        window.toggleMembersPanel = () => {
+            document.getElementById('members-panel').classList.toggle('hidden');
+        };
+
+        window.toggleEmojiPicker = () => {
+            const picker = document.getElementById('emoji-picker');
+            picker.classList.toggle('hidden');
+        };
+
+        window.insertEmoji = (emoji) => {
+            const input = document.getElementById('chat-input');
+            input.value += emoji;
+            input.focus();
+        };
+
+        window.confirmLogout = () => {
+            if (confirm('Deseja realmente sair?')) {
+                signOut(auth).then(() => {
+                    window.location.href = 'index.html';
+                });
             }
         };
-        window.closeModal = () => document.getElementById('modal-container').classList.add('hidden');
-        window.confirmCreateServer = async () => {
-            const name = document.getElementById('new-server-name').value;
-            if(!name) return;
-            const sRef = push(ref(db, 'servers'));
-            await set(sRef, { name, owner: user.uid });
-            await set(ref(db, `users/${user.uid}/servers/${sRef.key}`), true);
-            const catRef = push(ref(db, `servers/${sRef.key}/categories`));
-            await set(catRef, { name: 'Geral' });
-            await push(ref(db, `servers/${sRef.key}/categories/${catRef.key}/channels`), { name: 'geral', type: 'text' });
+
+        window.toggleServerMenu = () => {
+            alert('Menu do servidor em desenvolvimento');
+        };
+
+        window.toggleUserMenu = () => {
+            alert('Menu de usuário em desenvolvimento');
+        };
+
+        // Placeholder functions
+        window.addFriend = () => {
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <h2 class="text-2xl font-bold text-white mb-2">Adicionar Amigo</h2>
+                <p class="text-sm text-[#949ba4] mb-6">Digite o nome de usuário do seu amigo.</p>
+                
+                <div class="mb-4">
+                    <label class="form-label">Nome de Usuário</label>
+                    <input type="text" id="friend-username" class="form-input" placeholder="usuario#0000">
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="btn btn-secondary flex-1">Cancelar</button>
+                    <button class="btn btn-primary flex-1">Enviar Solicitação</button>
+                </div>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
+        };
+        
+        window.createServer = () => {
+            const name = document.getElementById('server-name').value.trim();
+            if (!name) return alert('Digite um nome para o servidor');
+            alert('Servidor criado: ' + name);
             closeModal();
         };
-        window.createCategory = () => {
-            const n = prompt("Nome da Categoria:");
-            if(n) push(ref(db, `servers/${activeServer}/categories`), { name: n });
+        
+        window.handleFileUpload = (e) => {
+            const files = e.target.files;
+            console.log('Arquivos selecionados:', files);
+            alert(`${files.length} arquivo(s) selecionado(s)`);
         };
-        window.addChannel = (catId) => {
-            const n = prompt("Nome do Canal:");
-            const t = confirm("OK para Texto, CANCEL para Voz") ? 'text' : 'voice';
-            if(n) push(ref(db, `servers/${activeServer}/categories/${catId}/channels`), { name: n.toLowerCase(), type: t });
-        };
-        window.copyInvite = () => {
-            navigator.clipboard.writeText(`${location.origin}${location.pathname}?invite=${activeServer}`);
-            alert("Convite Copiado!");
-        };
-        window.viewDMs = () => {
-            isDMView = true; activeServer = null;
-            document.getElementById('sidebar-title').textContent = "Mensagens Diretas";
-            document.getElementById('server-actions').classList.add('hidden');
-            document.getElementById('sidebar-content').innerHTML = `<button onclick="addFriend()" class="w-full text-left p-2 text-xs font-bold text-[#949ba4] hover:text-white uppercase">Buscar Amigos +</button><div id="dm-flow" class="mt-4"></div>`;
-            onValue(ref(db, `users/${user.uid}/conversations`), snap => {
-                const f = document.getElementById('dm-flow'); if(!f) return; f.innerHTML = '';
-                snap.forEach(d => {
-                    const div = document.createElement('div'); div.className = "p-2 flex items-center gap-3 cursor-pointer rounded hover:bg-[#35373c] mb-1";
-                    div.innerHTML = `<div class="w-8 h-8 rounded-full bg-gray-500"></div> <span class="text-sm font-medium">${d.val().withName}</span>`;
-                    div.onclick = () => { activeChannel = d.key; document.getElementById('chat-header-title').textContent = d.val().withName; loadMessages(); };
-                    f.appendChild(div);
-                });
-            });
-        };
+        
+        window.startRecording = () => console.log('Gravação iniciada');
+        window.stopRecording = () => console.log('Gravação parada');
+        window.addReaction = (msgId, emoji) => console.log('Reação adicionada:', emoji);
+        window.toggleReaction = (emoji) => console.log('Toggle reação:', emoji);
+
+        // Fechar emoji picker ao clicar fora
+        document.addEventListener('click', (e) => {
+            const picker = document.getElementById('emoji-picker');
+            const emojiBtn = e.target.closest('[onclick="toggleEmojiPicker()"]');
+            
+            if (!picker.contains(e.target) && !emojiBtn && !picker.classList.contains('hidden')) {
+                picker.classList.add('hidden');
+            }
+        });
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal-container').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-container') {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
